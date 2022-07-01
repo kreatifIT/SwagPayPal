@@ -36,6 +36,7 @@
             <argument type="service" id="Swag\PayPal\OrdersApi\Builder\Util\PurchaseUnitProvider"/>
             <argument type="service" id="Swag\PayPal\OrdersApi\Builder\Util\AddressProvider"/>
             <argument type="service" id="Swag\PayPal\OrdersApi\Builder\Util\ItemListProvider"/>
+            <argument type="service" id="request_stack"/>
         </service>
 
         <service id="Swag\PayPal\OrdersApi\Builder\PUIOrderBuilder">

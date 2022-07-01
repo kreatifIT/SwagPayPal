@@ -21,19 +21,27 @@ use Swag\PayPal\RestApi\V2\Api\Order;
 use Swag\PayPal\RestApi\V2\Api\Order\ApplicationContext;
 use Swag\PayPal\RestApi\V2\Api\Order\PurchaseUnit;
 use Swag\PayPal\Setting\Settings;
+use Symfony\Component\HttpFoundation\RequestStack;
+
 
 class OrderFromOrderBuilder extends AbstractOrderBuilder
 {
     private ItemListProvider $itemListProvider;
 
+
+    /** @var RequestStack */
+    private RequestStack $requestStack;
+
     public function __construct(
         SystemConfigService $systemConfigService,
         PurchaseUnitProvider $purchaseUnitProvider,
         AddressProvider $addressProvider,
-        ItemListProvider $itemListProvider
+        ItemListProvider $itemListProvider,
+        RequestStack $requestStack
     ) {
         parent::__construct($systemConfigService, $purchaseUnitProvider, $addressProvider);
         $this->itemListProvider = $itemListProvider;
+        $this->requestStack     = $requestStack;
     }
 
     public function getOrder(
@@ -41,9 +49,9 @@ class OrderFromOrderBuilder extends AbstractOrderBuilder
         SalesChannelContext $salesChannelContext,
         CustomerEntity $customer
     ): Order {
-        $intent = $this->getIntent($salesChannelContext->getSalesChannelId());
-        $payer = $this->createPayer($customer);
-        $purchaseUnit = $this->createPurchaseUnit(
+        $intent             = $this->getIntent($salesChannelContext->getSalesChannelId());
+        $payer              = $this->createPayer($customer);
+        $purchaseUnit       = $this->createPurchaseUnit(
             $salesChannelContext,
             $paymentTransaction->getOrder(),
             $paymentTransaction->getOrderTransaction(),
@@ -85,6 +93,12 @@ class OrderFromOrderBuilder extends AbstractOrderBuilder
 
     private function addReturnUrls(ApplicationContext $applicationContext, string $returnUrl): void
     {
+        $request        = $this->requestStack;
+        $currentRequest = $request->getCurrentRequest();
+        $currentDomain  = rtrim($_SERVER['APP_URL'], '/') . '/';
+        $redirectDomain = rtrim($currentRequest->get('sw-sales-channel-absolute-base-url'), '/') . '/';
+        $returnUrl      = str_replace($currentDomain, $redirectDomain, $returnUrl);
+
         $applicationContext->setReturnUrl($returnUrl);
         $applicationContext->setCancelUrl(\sprintf('%s&cancel=1', $returnUrl));
     }
