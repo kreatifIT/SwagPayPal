@@ -7,15 +7,18 @@
 
 namespace Swag\PayPal\Util\Lifecycle;
 
+use Shopware\Core\Content\Category\Exception\CategoryNotFoundException;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Plugin\Context\UpdateContext;
+use Shopware\Core\System\SalesChannel\SalesChannelCollection;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Swag\PayPal\Checkout\Payment\Method\PUIHandler;
 use Swag\PayPal\Checkout\Payment\PayPalPaymentHandler;
 use Swag\PayPal\Pos\Api\Exception\PosApiException;
+use Swag\PayPal\Pos\Setting\Exception\CustomerGroupNotFoundException;
 use Swag\PayPal\Pos\Setting\Service\InformationDefaultService;
 use Swag\PayPal\Pos\Setting\Struct\AdditionalInformation;
 use Swag\PayPal\Pos\Util\PosSalesChannelTrait;
@@ -30,7 +33,10 @@ use Swag\PayPal\Setting\Exception\PayPalSettingsInvalidException;
 use Swag\PayPal\Setting\Settings;
 use Swag\PayPal\SwagPayPal;
 use Swag\PayPal\Util\Lifecycle\Installer\PaymentMethodInstaller;
+use Swag\PayPal\Util\Lifecycle\Method\OxxoMethodData;
+use Swag\PayPal\Util\Lifecycle\Method\PayLaterMethodData;
 use Swag\PayPal\Util\Lifecycle\Method\PUIMethodData;
+use Swag\PayPal\Util\Lifecycle\Method\VenmoMethodData;
 use Swag\PayPal\Util\Lifecycle\State\PaymentMethodStateService;
 use Swag\PayPal\Webhook\Exception\WebhookIdInvalidException;
 use Swag\PayPal\Webhook\WebhookService;
@@ -114,12 +120,20 @@ class Update
             $this->updateTo300($updateContext->getContext());
         }
 
-        if (\version_compare($updateContext->getCurrentPluginVersion(), '4.1.0', '<')) {
-            $this->updateTo410();
-        }
-
         if (\version_compare($updateContext->getCurrentPluginVersion(), '5.0.0', '<')) {
             $this->updateTo500($updateContext->getContext());
+        }
+
+        if (\version_compare($updateContext->getCurrentPluginVersion(), '5.3.0', '<')) {
+            $this->updateTo530($updateContext->getContext());
+        }
+
+        if (\version_compare($updateContext->getCurrentPluginVersion(), '5.3.1', '<')) {
+            $this->updateTo531($updateContext->getContext());
+        }
+
+        if (\version_compare($updateContext->getCurrentPluginVersion(), '5.4.0', '<')) {
+            $this->updateTo540($updateContext->getContext());
         }
     }
 
@@ -220,7 +234,11 @@ class Update
             ],
         ], $context);
 
-        $this->informationDefaultService->addInformation(new AdditionalInformation(), $context);
+        try {
+            $this->informationDefaultService->addInformation(new AdditionalInformation(), $context);
+        } catch (CustomerGroupNotFoundException|CategoryNotFoundException $e) {
+            // ignore, we only need payment and shipping method
+        }
 
         $this->paymentRepository->upsert([[
             'id' => InformationDefaultService::POS_PAYMENT_METHOD_ID,
@@ -279,6 +297,8 @@ class Update
         $criteria = new Criteria();
         $criteria->addFilter(new EqualsFilter('typeId', SwagPayPal::SALES_CHANNEL_TYPE_POS));
         $criteria->addAssociation(SwagPayPal::SALES_CHANNEL_POS_EXTENSION);
+
+        /** @var SalesChannelCollection $posSalesChannels */
         $posSalesChannels = $this->salesChannelRepository->search($criteria, $context)->getEntities();
 
         try {
@@ -294,17 +314,30 @@ class Update
         }
     }
 
-    private function updateTo410(): void
-    {
-        $this->setSettingToDefaultValue(Settings::SPB_SHOW_PAY_LATER);
-    }
-
     private function updateTo500(Context $context): void
     {
         $this->changePaymentHandlerIdentifier('Swag\PayPal\Checkout\Payment\PayPalPuiPaymentHandler', PUIHandler::class, $context);
         $this->paymentMethodStateService->setPaymentMethodState(PUIMethodData::class, false, $context);
         $this->paymentMethodInstaller->installAll($context);
         $this->setSettingToDefaultValue(Settings::PUI_CUSTOMER_SERVICE_INSTRUCTIONS);
+    }
+
+    private function updateTo530(Context $context): void
+    {
+        $this->paymentMethodInstaller->install(VenmoMethodData::class, $context);
+        $this->paymentMethodInstaller->install(PayLaterMethodData::class, $context);
+    }
+
+    private function updateTo531(Context $context): void
+    {
+        $this->paymentMethodInstaller->install(OxxoMethodData::class, $context);
+        $this->paymentMethodInstaller->install(PayLaterMethodData::class, $context);
+    }
+
+    private function updateTo540(Context $context): void
+    {
+        $this->paymentMethodInstaller->removeRules($context);
+        $this->setSettingToDefaultValue(Settings::ACDC_FORCE_3DS);
     }
 
     private function changePaymentHandlerIdentifier(string $previousHandler, string $newHandler, Context $context): void

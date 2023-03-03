@@ -191,6 +191,7 @@ class PayPalExpressCheckoutDataServiceTest extends TestCase
         static::assertSame('/store-api/context', $expressCheckoutButtonData->getContextSwitchUrl());
         static::assertSame('/store-api/paypal/error', $expressCheckoutButtonData->getAddErrorUrl());
         static::assertSame($addToCart ? '/checkout/cart' : '/checkout/register', $expressCheckoutButtonData->getCancelRedirectUrl());
+        static::assertTrue($expressCheckoutButtonData->isDisablePayLater());
         static::assertNotNull($expressCheckoutButtonData->getPayPalPaymentMethodId());
         static::assertSame(
             $this->paymentMethodUtil->getPayPalPaymentMethodId($salesChannelContext->getContext()),
@@ -247,7 +248,7 @@ class PayPalExpressCheckoutDataServiceTest extends TestCase
             'lastName' => 'Dusel',
             'customerNumber' => 'wusel',
             'email' => 'wuse@dusel.de',
-            'password' => 'annanas',
+            'password' => 'annanas1',
             'defaultPaymentMethodId' => $this->getValidPaymentMethodId(),
             'groupId' => Defaults::FALLBACK_CUSTOMER_GROUP,
             'salesChannelId' => Defaults::SALES_CHANNEL,

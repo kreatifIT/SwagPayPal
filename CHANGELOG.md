@@ -1,3 +1,59 @@
+# 5.4.5
+- PPI-734 - Fixes an issue, where some payment methods were not displayed in after order process
+- PPI-720, PPI-741, PPI-743 - Fixes an issue, where the total tax amount was calculated incorrectly for net customers
+
+# 5.4.4
+- PPI-734 - Fixes an issue, where some payment methods were not displayed in after order process
+- PPI-735 - Fixes an issue, where payment details were not shown on orders, where PayPal was not the first chosen payment method
+- PPI-737 - Fixes an issue, where the order / payment details were not correctly transferred to PayPal
+
+# 5.4.3
+- PPI-654 - Fixes an issue, where Zettle sync errors were not displayed
+- PPI-661 - Small performance improvements
+- PPI-718 - Fixes an issue, where onboarding for specific Sales Channel configurations could not be completed
+- PPI-733 - Fixes an issue, where the Sandbox flag was not correctly respected in specific Sales Channel configurations
+
+# 5.4.2
+- PPI-723 - Fixes an issue, where some APM payment methods did not work sometimes due to unannounced PayPal API changes
+- PPI-724 - Fixes an issue, where the payment could fail if PayPal did not send full capture / authorization details
+
+# 5.4.1
+- PPI-716 - Fixes an error during the update if availability rules are still in use
+
+# 5.4.0
+- PPI-707 - Fixed issue where checking out with "Pay Later", "SEPA" and "Venmo" result in an error
+- PPI-712 - Improved handling of payment method availability, removed availability rules
+- PPI-713 - Improved 3D Secure handling in credit card payments
+
+# 5.3.2
+- PPI-709 - Fixed issue where PayPal was not installable, if the default language was neither English nor German
+
+# 5.3.1
+- PPI-672 - Fixed issue where captures could not always set transactions to paid
+- PPI-681 - Fixed issue where Pay Later was not available for British and Australian customers
+- PPI-681 - Fixed issue where Oxxo was not available for Mexican customers
+- PPI-682 - Fixed issue with missing German translations in the administration
+- PPI-684 - Improved spelling in the Administration
+- PPI-688 - Fixed issue where the default carrier field in shipping methods was not always shown
+- PPI-694 - Fixed issue where the default carrier field was shown in non-PayPal orders
+- PPI-695 - Fixed issue ignoring excluded products per sales channel
+- PPI-700 - Changed API URL to PayPal from `api.paypal.com` to `api-m.paypal.com` to increase performance
+- PPI-702 - Fixed issue where payment details of non-PayPal-wallet payments were not always visible
+
+# 5.3.0
+- PPI-627 - Added new payment methods "Pay Later" and "Venmo"
+- PPI-673 - Added automatic transmission of shipping tracking numbers to PayPal
+- PPI-677 - Improved availability of payment methods in Administration
+- PPI-678 - Fixed issue with Zettle Media URL field in the Administration
+
+# 5.2.0
+- PPI-625 - Added compatibility for new payment method overview of Shopware 6.4.14.0
+- PPI-663 - Fix issue where taxes were not correctly calculated for net orders
+
+# 5.1.2
+- PPI-664 - Improved 3D Secure handling in credit card payments
+- PPI-670 - Improved display of onboarding status in Administration
+
 # 5.1.1
 - PPI-657 - Cleaned up template `buy-widget-form` 
 
@@ -6,7 +62,7 @@
 - PPI-617 - Fix issue where payment method authorizations were not correctly shown for Sales Channel specific settings
 - PPI-620 - Fix issue showing an incorrect webhook error message on saving settings without credentials 
 - PPI-634 - Fix issue with shipping tax calculation for net customer groups
-- PPI-635 - Fix issue with incorrent Pay Upon Invoice data display in invoices
+- PPI-635 - Fix issue with incorrect Pay Upon Invoice data display in invoices
 - PPI-639 - The Sales Channel selection in the PayPal settings can now display more than 25 Sales Channels
 - PPI-648 - Improved handling of Smart Payment Buttons, when the JS is not loaded fast enough
 - PPI-649 - Fix issue where a partially refunded PayPal Plus payment was set to refunded in Shopware via Webhooks

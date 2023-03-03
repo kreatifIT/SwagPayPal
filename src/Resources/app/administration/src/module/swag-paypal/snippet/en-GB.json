@@ -26,6 +26,10 @@
                 "label": "Set PayPal as default"
             }
         },
+        "shippingAlert": {
+            "title": "Package tracking available",
+            "message": "You can now provide package tracking if you select a default shipping carrier in your <a href=\"#/sw/settings/shipping/index\">shipping methods →</a>."
+        },
         "general": {
             "mainMenuItemGeneral": "PayPal",
             "descriptionTextModule": "PayPal settings"
@@ -36,14 +40,25 @@
             "testSandbox": "Test sandbox API credentials",
             "checkout": {
                 "cardTitle": "PayPal Checkout",
+                "settingsLink": "Settings",
+                "header": "More payment methods with one solution from PayPal",
                 "description": "PayPal Checkout is the new all-in-one solution that lets you offer powerful flexibile payment processing features on the marketplaces and other commerce platforms.",
                 "banner": "With PayPal Checkout, you can offer your customers payment by invoice, credit card and other local payment methods. PayPal Checkout supports you with the latest technology and brings you the highest flexibility. You keep your existing payment methods, and the fees remain the same! Activate PayPal Checkout and deactivate PayPal PLUS to avoid duplicate payment methods in your shop. <a href=\"https://www.shopware.com/en/news/paypal-launches-new-product/?utm_source=product&utm_medium=sw6-onprem&utm_campaign=paypal-checkout&utm_content=link-en-blog\" target=\"_blank\">More information</a>",
                 "button": {
-                    "title": "Start onboarding"
+                  "liveTitle": "Connect PayPal account",
+                  "sandboxTitle": "Connect sandbox account",
+                  "changeLiveTitle": "Connect different account",
+                  "changeSandboxTitle": "Connect different sandbox account",
+                  "onboardingLiveTitle": "Start PayPal Checkout onboarding",
+                  "onboardingSandboxTitle": "Start PayPal Checkout sandbox onboarding",
+                  "restartOnboardingLiveTitle": "Restart PayPal Checkout onboarding",
+                  "restartOnboardingSandboxTitle": "Restart PayPal Checkout sandbox onboarding"
                 },
                 "sandbox": {
-                    "label": "Use sandbox credentials",
-                    "tooltipText": "Enable if you want to test the PayPal integration."
+                    "label": "Sandbox",
+                    "onlySandboxTooltip": "You are only connected a sandbox PayPal account so far.",
+                    "onlyLiveTooltip": "You are only connected a live PayPal account so far.",
+                    "helpText": "Enable, if you want to test the PayPal integration."
                 },
                 "switch": {
                     "label": "Active"
@@ -51,7 +66,7 @@
                 "paymentMethodText": "Payment methods",
                 "showCredentials": "Show credentials",
                 "appImageAlt": "PayPal",
-                "editDetail": "Edit Detail",
+                "editDetail": "Edit details",
                 "startOnboardingButtonLabel": "Start onboarding",
                 "availabilityToolTip": {
                     "bancontactapmhandler": "Bancontact is available for the following countries: Belgium",
@@ -64,16 +79,23 @@
                     "mybankapmhandler": "MyBank is available for the following countries: Italy",
                     "oxxoapmhandler": "OXXO is available for the following countries: Mexico",
                     "p24apmhandler": "Przelewy24 is available for the following countries: Poland",
+                    "paylaterhandler": "Pay Later is available for the following countries: Australia, France, Germany, Italy, Spain, United Kingdom, United States",
                     "puihandler": "Pay upon invoice is available for the following countries: Germany",
                     "sepahandler": "SEPA Lastschrift is available for the following countries: Germany",
                     "sofortapmhandler": "Sofort is available for the following countries: Austria, Belgium, Germany, Italy, Netherlands, Spain, United Kingdom",
+                    "venmohandler": "Venmo is available for the following countries: United States",
                     "trustlyapmhandler": "Trustly is available for the following countries: Estonia, Finland, Netherlands, Sweden"
                 },
                 "onboardingStatusText": {
                     "active": "Authorized",
                     "limited": "Limited",
                     "pending": "Authorization pending",
+                    "ineligible": "Ineligible",
                     "inactive": "Onboarding needed"
+                },
+                "onboardingStatusTooltip": {
+                    "ineligible": "PayPal informed us, that this payment method is currently ineligible for your account.",
+                    "limited": "PayPal informed us, that this payment method has some limitations for your account."
                 },
                 "paymentMethodStatusChangedSuccess": {
                     "active": "Payment method \"{name}\" is now active.",
@@ -117,7 +139,7 @@
                 },
                 "sandbox": {
                     "label": "Enable sandbox",
-                    "tooltipText": "Enable if you want to test the PayPal integration."
+                    "tooltipText": "Enable, if you want to test the PayPal integration."
                 },
                 "button": {
                     "title": "Get API credentials",
@@ -190,11 +212,11 @@
             "express": {
                 "cardTitle": "PayPal Express Checkout",
                 "ecsDetailEnabled": {
-                    "label": "'Pay now' on detail page",
+                    "label": "'Pay Now' on detail page",
                     "helpText": "If this option is active, the Express Checkout button will be shown on each product detail page."
                 },
                 "ecsCartEnabled": {
-                    "label": "'Pay now' on cart",
+                    "label": "'Pay Now' on cart",
                     "helpText": "If this option is active, the Express Checkout button will be shown on the cart."
                 },
                 "ecsOffCanvasEnabled": {
@@ -206,7 +228,7 @@
                     "helpText": "If this option is active, the Express Checkout button will be shown on the login and register page."
                 },
                 "ecsListingEnabled": {
-                    "label": "'Pay now' on listing pages",
+                    "label": "'Pay Now' on listing pages",
                     "helpText": "If this option is active, the Express Checkout button will be shown on listing pages."
                 },
                 "ecsButtonColor": {
@@ -239,6 +261,13 @@
                 "cardTitle": "Installments",
                 "installmentBannerEnabled": {
                     "label": "Enable installment banner"
+                }
+            },
+            "acdc": {
+                "cardTitle": "Credit- or debit card",
+                "acdcForce3DS": {
+                    "label": "Execute transactions with 3D Secure only",
+                    "helpText": "Transaction will not be accepted, if 3D Secure is unavailable."
                 }
             },
             "pui": {

@@ -14,7 +14,6 @@ use Swag\PayPal\Checkout\Exception\MissingPayloadException;
 use Swag\PayPal\Checkout\Exception\OrderFailedException;
 use Swag\PayPal\OrdersApi\Patch\OrderNumberPatchBuilder;
 use Swag\PayPal\RestApi\Exception\PayPalApiException;
-use Swag\PayPal\RestApi\V2\Api\Order;
 use Swag\PayPal\RestApi\V2\Api\Order as PayPalOrder;
 use Swag\PayPal\RestApi\V2\Api\Order\PurchaseUnit\Payments;
 use Swag\PayPal\RestApi\V2\Api\Order\PurchaseUnit\Payments\Authorization;
@@ -49,16 +48,14 @@ class OrderExecuteService
     /**
      * @throws PayPalApiException
      */
-    public function executeOrder(
+    public function captureOrAuthorizeOrder(
         string $transactionId,
-        string $paypalOrderId,
+        PayPalOrder $paypalOrder,
         string $salesChannelId,
         Context $context,
         string $partnerAttributionId
     ): PayPalOrder {
         $this->logger->debug('Started');
-
-        $paypalOrder = $this->orderResource->get($paypalOrderId, $salesChannelId);
 
         try {
             return $this->doPayPalRequest($paypalOrder, $salesChannelId, $partnerAttributionId, $transactionId, $context);
@@ -72,7 +69,7 @@ class OrderExecuteService
 
             $this->orderResource->update(
                 [$this->orderNumberPatchBuilder->createRemoveOrderNumberPatch()],
-                $paypalOrderId,
+                $paypalOrder->getId(),
                 $salesChannelId,
                 $partnerAttributionId
             );
@@ -81,11 +78,28 @@ class OrderExecuteService
         }
     }
 
+    /**
+     * @deprecated tag:v6.0.0 - will be removed, use captureOrAuthorizeOrder() instead
+     *
+     * @throws PayPalApiException
+     */
+    public function executeOrder(
+        string $transactionId,
+        string $paypalOrderId,
+        string $salesChannelId,
+        Context $context,
+        string $partnerAttributionId
+    ): PayPalOrder {
+        $paypalOrder = $this->orderResource->get($paypalOrderId, $salesChannelId);
+
+        return $this->captureOrAuthorizeOrder($transactionId, $paypalOrder, $salesChannelId, $context, $partnerAttributionId);
+    }
+
     private function doPayPalRequest(PayPalOrder $paypalOrder, string $salesChannelId, string $partnerAttributionId, string $transactionId, Context $context): PayPalOrder
     {
         if ($paypalOrder->getIntent() === PaymentIntentV2::CAPTURE) {
             $response = $this->orderResource->capture($paypalOrder->getId(), $salesChannelId, $partnerAttributionId);
-            $captures = $this->getPayment($response)->getCaptures();
+            $captures = $this->getPayments($response, $salesChannelId)->getCaptures();
             if (empty($captures)) {
                 throw new MissingPayloadException($response->getId(), 'purchaseUnit.payments.captures');
             }
@@ -105,7 +119,7 @@ class OrderExecuteService
         }
 
         $response = $this->orderResource->authorize($paypalOrder->getId(), $salesChannelId, $partnerAttributionId);
-        $authorizations = $this->getPayment($response)->getAuthorizations();
+        $authorizations = $this->getPayments($response, $salesChannelId)->getAuthorizations();
         if (empty($authorizations)) {
             throw new MissingPayloadException($response->getId(), 'purchaseUnit.payments.authorizations');
         }
@@ -126,7 +140,26 @@ class OrderExecuteService
         return $response;
     }
 
-    private function getPayment(Order $order): Payments
+    private function getPayments(PayPalOrder $order, string $salesChannelId): Payments
+    {
+        $payments = $this->getPaymentsFromOrder($order);
+        if ($payments !== null) {
+            return $payments;
+        }
+
+        $refetchedOrder = $this->orderResource->get($order->getId(), $salesChannelId);
+
+        $payments = $this->getPaymentsFromOrder($refetchedOrder);
+        if ($payments === null) {
+            throw new MissingPayloadException($order->getId(), 'purchaseUnit.payments');
+        }
+
+        $order->setPurchaseUnits($refetchedOrder->getPurchaseUnits());
+
+        return $payments;
+    }
+
+    private function getPaymentsFromOrder(PayPalOrder $order): ?Payments
     {
         $purchaseUnits = $order->getPurchaseUnits();
         if (empty($purchaseUnits)) {

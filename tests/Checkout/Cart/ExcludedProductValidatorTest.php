@@ -9,6 +9,7 @@ namespace Swag\PayPal\Test\Checkout\Cart;
 
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Content\Product\DataAbstractionLayer\ProductStreamUpdater;
+use Shopware\Core\Content\Product\ProductCollection;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
@@ -21,11 +22,14 @@ use Swag\PayPal\Checkout\Cart\Service\ExcludedProductValidator;
 use Swag\PayPal\Checkout\ExpressCheckout\ExpressCheckoutSubscriber;
 use Swag\PayPal\Setting\Settings;
 use Swag\PayPal\Test\Helper\FullCheckoutTrait;
+use Swag\PayPal\Test\Helper\PaymentMethodTrait;
+use Swag\PayPal\Util\PaymentMethodUtil;
 
 class ExcludedProductValidatorTest extends TestCase
 {
     use IntegrationTestBehaviour;
     use FullCheckoutTrait;
+    use PaymentMethodTrait;
 
     private ExcludedProductValidator $validator;
 
@@ -37,6 +41,8 @@ class ExcludedProductValidatorTest extends TestCase
     {
         $this->validator = $this->getContainer()->get(ExcludedProductValidator::class);
         $this->systemConfig = $this->getContainer()->get(SystemConfigService::class);
+        $paymentMethodUtil = $this->getContainer()->get(PaymentMethodUtil::class);
+        $paymentMethodUtil->reset();
 
         $this->idsCollection = new IdsCollection();
         $this->idsCollection->set('parent', $this->createProduct());
@@ -93,6 +99,22 @@ class ExcludedProductValidatorTest extends TestCase
     /**
      * @dataProvider dataProviderConstellations
      */
+    public function testCartContainsExcludedProductOnlyInSalesChannel(?string $settingKey, ?string $settingIdName, ?string $expectedIdName): void
+    {
+        $context = $this->registerUser();
+
+        if ($settingKey && $settingIdName) {
+            $this->systemConfig->set($settingKey, [$this->idsCollection->get($settingIdName)], $context->getSalesChannelId());
+        }
+
+        $cart = $this->addToCart($this->idsCollection->get('variant'), $context);
+
+        static::assertSame((bool) $expectedIdName, $this->validator->cartContainsExcludedProduct($cart, $context));
+    }
+
+    /**
+     * @dataProvider dataProviderConstellations
+     */
     public function testFindExcludedProducts(?string $settingKey, ?string $settingIdName, ?string $expectedIdName): void
     {
         if ($settingKey && $settingIdName) {
@@ -141,6 +163,7 @@ class ExcludedProductValidatorTest extends TestCase
 
         /** @var SalesChannelRepositoryInterface $productRepository */
         $productRepository = $this->getContainer()->get('sales_channel.product.repository');
+        /** @var ProductCollection $products */
         $products = $productRepository->search(
             new Criteria([$this->idsCollection->get('variant')]),
             $this->registerUser()

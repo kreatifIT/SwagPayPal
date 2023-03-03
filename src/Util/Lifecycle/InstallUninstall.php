@@ -15,7 +15,7 @@ use Swag\PayPal\Util\Lifecycle\Installer\SettingsInstaller;
 class InstallUninstall
 {
     /**
-     * @deprecated tag:v6.0.0 - has been moved to \Swag\PayPal\Util\Lifecycle\Method\PayPalPuiMethodData::PAYPAL_PUI_AVAILABILITY_RULE_NAME and set to private. will be removed here.
+     * @deprecated tag:v6.0.0 - will be removed
      */
     public const PAYPAL_PUI_AVAILABILITY_RULE_NAME = 'PayPalPuiAvailabilityRule';
 
@@ -44,7 +44,6 @@ class InstallUninstall
     public function uninstall(Context $context): void
     {
         $this->settingsInstaller->removeConfiguration($context);
-        $this->paymentMethodInstaller->removeRules($context);
         $this->posInstaller->removePosTables();
     }
 }

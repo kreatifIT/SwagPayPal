@@ -1,3 +1,59 @@
+# 5.4.5
+- PPI-734 - Behebt ein Problem, bei dem Zahlungsarten beim Zahlartwechsel nach Bestellabschluss nicht angezeigt wurden
+- PPI-720, PPI-741, PPI-743 - Behebt ein Problem, bei dem die Steuern für Nettokudnen falsch berechnet wurde
+
+# 5.4.4
+- PPI-734 - Behebt ein Problem, bei dem Zahlungsarten beim Zahlartwechsel nach Bestellabschluss nicht angezeigt wurden
+- PPI-735 - Behebt ein Problem, bei dem Zahlungsdetails nicht angezeigt wurden, wenn PayPal nicht die erstgewählte Zahlungsart war
+- PPI-737 - Behebt ein Problem, bei dem die Bestell-/Zahlungsdetails nicht korrekt an PayPal übertragen wurden
+
+# 5.4.3
+- PPI-654 - Behebt ein Problem, bei dem Zettle Synchronisationsfehler nicht angezeigt wurden
+- PPI-661 - Kleine Performance-Verbesserungen
+- PPI-718 - Behebt ein Problem, bei dem das Onboarding für Sales-Channel-spezifischen Konfigurationen nicht abgeschlossen werden konnte
+- PPI-733 - Behebt ein Problem, bei dem die Sandbox-Konfiguration nicht immer bei Sales-Channel-spezifischen Konfigurationen verwendet wurde
+
+# 5.4.2
+- PPI-723 - Behebt ein Problem, bei dem aufgrund von unangekündigten API-Änderungen bei PayPal einige APM-Zahlungsmethoden manchmal nicht mehr funktionierten
+- PPI-724 - Behebt ein Problem, bei dem eine Zahlung fehlschlagen konnte, falls PayPal nicht die vollen Zahlungsdetails zurückgab
+
+# 5.4.1
+- PPI-716 - Behebt einen Fehler beim Update, falls Verfügbarkeits-Regel noch in Benutzung sind
+
+# 5.4.0                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
+- PPI-707 - Behebt ein Problem, bei dem während des Bestellvorgangs mit "Später bezahlen", "SEPA" and "Venmo" ein Fehler auftrat
+- PPI-712 - Handhabung von Zahlungsmethodenverfügbarkeit verbessert, existierende Verfügbarkeitsregeln entfernt
+- PPI-713 - Verwendung von 3D Secure für Kreditkartenzahlungen verbessert
+
+# 5.3.2
+- PPI-709 - Behebt ein Problem, bei dem PayPal nicht installiert werden konnte, wenn die Standardsprache nicht Deutsch oder Englisch war
+
+# 5.3.1
+- PPI-672 - Behebt ein Problem, bei dem Einzügen der Zahlstatus Bezahlt nicht immer gesetzt werden konnte
+- PPI-681 - Behebt ein Problem, bei dem Später Bezahlen nicht für britische und australische Kunden verfügbar ist
+- PPI-681 - Behebt ein Problem, bei dem Oxxo nicht für mexikanische Kunden verfügbar ist
+- PPI-682 - Behebt ein Problem mit fehlenden deutschen Übersetzungen in der Administration
+- PPI-684 - Rechtschreibfehler in der Administration korrigiert
+- PPI-688 - Behebt ein Problem, bei dem das Eingabefeld für den Versandanbieter nicht immer angezeigt wurde
+- PPI-694 - Behebt ein Problem, bei dem der Versandanbieter auch für Nicht-PayPal-Bestellungen angezeigt wurde
+- PPI-695 - Behebt ein Problem, bei dem ausgeschlossene Produkte pro Verkaufskannal ignoriert werden
+- PPI-700 - API-URL von PayPal von `api.paypal.com` auf `api-m.paypal.com` für Performanceverbesserungen geändert
+- PPI-702 - Behebt ein Problem, bei dem bei Nicht-PayPal-Zahlungen die Zahlungsdetails nicht immer angezeigt wurden
+
+# 5.3.0
+- PPI-627 - Neue Zahlungsarten "Später bezahlen" und "Venmo" hinzugefügt
+- PPI-673 - Automatische Übermittlung von Sendungsverfolgungsdaten an PayPal hinzugefügt
+- PPI-677 - Verfügbarkeit von Zahlungsmethoden in der Administration verbessert
+- PPI-678 - Behebt ein Problem, bei dem das Zettle-Medien-URL-Feld in der Administration einen Fehler anzeigte
+
+# 5.2.0
+- PPI-625 - Kompatibilität für neue Zahlungsmethodenübersicht von Shopware 6.4.14.0 hinzugefügt
+- PPI-663 - Behebt ein Problem, bei dem Steuern nicht korrekt für Netto-Bestellungen berechnet wurden
+
+# 5.1.2
+- PPI-664 - Verwendung von 3D Secure für Kreditkartenzahlungen verbessert
+- PPI-670 - Darstellung des Onboarding-Status in der Administration verbessert
+
 # 5.1.1
 - PPI-657 - Template `buy-widget-form` wurde bereinigt
 

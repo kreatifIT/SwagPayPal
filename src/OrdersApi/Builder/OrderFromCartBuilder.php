@@ -22,6 +22,7 @@ use Swag\PayPal\OrdersApi\Builder\Util\PurchaseUnitProvider;
 use Swag\PayPal\RestApi\V2\Api\Order;
 use Swag\PayPal\RestApi\V2\Api\Order\PurchaseUnit;
 use Swag\PayPal\RestApi\V2\Api\Order\PurchaseUnit\Item;
+use Swag\PayPal\RestApi\V2\Api\Order\PurchaseUnit\Item\Tax;
 use Swag\PayPal\RestApi\V2\Api\Order\PurchaseUnit\Item\UnitAmount;
 use Swag\PayPal\Setting\Settings;
 use Swag\PayPal\Util\PriceFormatter;
@@ -49,6 +50,9 @@ class OrderFromCartBuilder extends AbstractOrderBuilder
         $this->logger = $logger;
     }
 
+    /**
+     * @deprecated tag:v6.0.0 - Parameter $isExpressCheckout will be removed
+     */
     public function getOrder(
         Cart $cart,
         SalesChannelContext $salesChannelContext,
@@ -62,7 +66,7 @@ class OrderFromCartBuilder extends AbstractOrderBuilder
             $payer = $this->createPayer($customer);
             $order->setPayer($payer);
         }
-        $purchaseUnit = $this->createPurchaseUnit($salesChannelContext, $cart, $customer, $isExpressCheckout);
+        $purchaseUnit = $this->createPurchaseUnit($salesChannelContext, $cart, $customer);
         $applicationContext = $this->createApplicationContext($salesChannelContext);
 
         $order->setIntent($intent);
@@ -75,16 +79,14 @@ class OrderFromCartBuilder extends AbstractOrderBuilder
     private function createPurchaseUnit(
         SalesChannelContext $salesChannelContext,
         Cart $cart,
-        ?CustomerEntity $customer,
-        bool $isExpressCheckoutProcess
+        ?CustomerEntity $customer
     ): PurchaseUnit {
         $cartTransaction = $cart->getTransactions()->first();
         if ($cartTransaction === null) {
             throw new InvalidTransactionException('');
         }
 
-        $submitCart = ($isExpressCheckoutProcess && $this->systemConfigService->getBool(Settings::ECS_SUBMIT_CART, $salesChannelContext->getSalesChannelId()))
-            || (!$isExpressCheckoutProcess && $this->systemConfigService->getBool(Settings::SUBMIT_CART, $salesChannelContext->getSalesChannelId()));
+        $submitCart = $this->systemConfigService->getBool(Settings::SUBMIT_CART, $salesChannelContext->getSalesChannelId());
 
         $items = $submitCart ? $this->createItems($salesChannelContext->getCurrency(), $cart) : null;
 
@@ -116,6 +118,11 @@ class OrderFromCartBuilder extends AbstractOrderBuilder
             $item = new Item();
             $this->setName($lineItem, $item);
             $this->setSku($lineItem, $item);
+
+            $tax = new Tax();
+            $tax->setCurrencyCode($currencyCode);
+            $tax->setValue($this->priceFormatter->formatPrice($price->getCalculatedTaxes()->getAmount()));
+            $item->setTax($tax);
 
             $unitAmount = new UnitAmount();
             $unitAmount->setCurrencyCode($currencyCode);
