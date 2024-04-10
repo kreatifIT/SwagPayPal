@@ -369,9 +369,6 @@ class PaymentStatusUtilTest extends TestCase
         $criteria = new Criteria([$orderId]);
         $criteria->addAssociation('transactions');
 
-        /** @var OrderEntity|null $order */
-        $order = $this->orderRepository->search($criteria, Context::createDefaultContext())->first();
-
-        return $order;
+        return $this->orderRepository->search($criteria, Context::createDefaultContext())->get($orderId);
     }
 }

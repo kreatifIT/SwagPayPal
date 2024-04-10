@@ -54,34 +54,25 @@ Component.register('swag-paypal-checkout', {
         },
         clientIdFilled: {
             type: Boolean,
-            required: false,
-            default: false,
+            required: true,
         },
         clientSecretFilled: {
             type: Boolean,
-            required: false,
-            default: false,
+            required: true,
         },
         clientIdSandboxFilled: {
             type: Boolean,
-            required: false,
-            default: false,
+            required: true,
         },
         clientSecretSandboxFilled: {
             type: Boolean,
-            required: false,
-            default: false,
+            required: true,
         },
         isLoading: {
             type: Boolean,
             required: true,
         },
         allowShowCredentials: {
-            type: Boolean,
-            required: false,
-            default: false,
-        },
-        showSettingsLink: {
             type: Boolean,
             required: false,
             default: false,
@@ -109,17 +100,7 @@ Component.register('swag-paypal-checkout', {
                 handler_swag_trustlyapmhandler: 'paypal-payment-method-trustly',
                 handler_swag_sepahandler: 'paypal-payment-method-sepa',
             },
-            /**
-             * @deprecated tag:v6.0.0 - will be removed, use merchantInformation.capabilities instead
-             */
-            merchantIntegrations: [],
-            merchantInformation: {
-                merchantIntegrations: {
-                    legalName: null,
-                    primaryEmail: null,
-                },
-                capabilities: [],
-            },
+            merchantIntegrations: {},
             plusDeprecationModalOpen: false,
             showHintMerchantIdMustBeEnteredManually: false,
             isLoadingPaymentMethods: false,
@@ -133,8 +114,6 @@ Component.register('swag-paypal-checkout', {
 
         paymentMethodCriteria() {
             const criteria = new Criteria(1, 500);
-
-            criteria.addAssociation('media');
 
             criteria.addFilter(Criteria.equals('plugin.name', 'SwagPayPal'));
             criteria.addSorting(Criteria.sort('position', 'ASC'), true);
@@ -150,56 +129,6 @@ Component.register('swag-paypal-checkout', {
             return this.actualConfigData['SwagPayPal.settings.sandbox'];
         },
 
-        liveButtonTitle() {
-            if (!this.actualConfigData['SwagPayPal.settings.clientSecret']) {
-                return this.$tc('swag-paypal.settingForm.checkout.button.liveTitle');
-            }
-
-            if (this.isSandbox) {
-                return this.$tc('swag-paypal.settingForm.checkout.button.changeLiveTitle');
-            }
-
-            if (!this.isOnboardingPPCPFinished) {
-                return this.$tc('swag-paypal.settingForm.checkout.button.onboardingLiveTitle');
-            }
-
-            if (this.paymentMethods.some((pm) => this.onboardingStatus(pm) !== 'active')) {
-                return this.$tc('swag-paypal.settingForm.checkout.button.restartOnboardingLiveTitle');
-            }
-
-            return this.$tc('swag-paypal.settingForm.checkout.button.changeLiveTitle');
-        },
-
-        sandboxButtonTitle() {
-            if (!this.actualConfigData['SwagPayPal.settings.clientSecretSandbox']) {
-                return this.$tc('swag-paypal.settingForm.checkout.button.sandboxTitle');
-            }
-
-            if (this.isLive) {
-                return this.$tc('swag-paypal.settingForm.checkout.button.changeSandboxTitle');
-            }
-
-            if (!this.isOnboardingPPCPFinished) {
-                return this.$tc('swag-paypal.settingForm.checkout.button.onboardingSandboxTitle');
-            }
-
-            if (this.paymentMethods.find((pm) => this.onboardingStatus(pm) !== 'active')) {
-                return this.$tc('swag-paypal.settingForm.checkout.button.restartOnboardingSandboxTitle');
-            }
-
-            return this.$tc('swag-paypal.settingForm.checkout.button.changeSandboxTitle');
-        },
-
-        sandboxToggleDisabled() {
-            return ((!this.actualConfigData['SwagPayPal.settings.clientSecret']
-                        && this.actualConfigData['SwagPayPal.settings.clientSecretSandbox']
-                        && this.isSandbox)
-                || (this.actualConfigData['SwagPayPal.settings.clientSecret']
-                        && !this.actualConfigData['SwagPayPal.settings.clientSecretSandbox']
-                        && this.isLive))
-                && !this.selectedSalesChannelId;
-        },
-
         isOnboardingPPCPFinished() {
             const sepaPaymentMethod = this.paymentMethods
                 .find((pm) => pm.formattedHandlerIdentifier === 'handler_swag_sepahandler');
@@ -209,21 +138,6 @@ Component.register('swag-paypal-checkout', {
             }
 
             return this.onboardingStatus(sepaPaymentMethod) === 'active';
-        },
-
-        showMerchantInformation() {
-            return this.isOnboardingPPCPFinished;
-        },
-
-        showSandboxToggle() {
-            return this.actualConfigData['SwagPayPal.settings.clientSecret']
-                || this.actualConfigData['SwagPayPal.settings.clientSecretSandbox']
-                || this.selectedSalesChannelId;
-        },
-
-        merchantEmail() {
-            return this.merchantInformation.merchantIntegrations.primary_email
-                ?? this.merchantInformation.merchantIntegrations.tracking_id;
         },
     },
 
@@ -283,24 +197,17 @@ Component.register('swag-paypal-checkout', {
         },
 
         async fetchMerchantIntegrations() {
-            this.merchantInformation = await this.SwagPayPalApiCredentialsService
-                .getMerchantInformation(this.selectedSalesChannelId)
+            this.merchantIntegrations = await this.SwagPayPalApiCredentialsService
+                .getMerchantIntegrations(this.selectedSalesChannelId)
                 .then((response) => {
                     return response;
                 });
-            this.merchantIntegrations = this.merchantInformation.capabilities;
         },
 
-        /**
-         * @deprecated tag:v6.0.0 - has been moved to `swag-paypal-checkout-method`
-         */
         icon(paymentMethod) {
             return this.iconMap[paymentMethod.formattedHandlerIdentifier];
         },
 
-        /**
-         * @deprecated tag:v6.0.0 - has been moved to `swag-paypal-checkout-method`
-         */
         editLink(paymentMethod) {
             return {
                 name: 'sw.settings.payment.detail',
@@ -310,16 +217,10 @@ Component.register('swag-paypal-checkout', {
             };
         },
 
-        /**
-         * @deprecated tag:v6.0.0 - has been moved to `swag-paypal-checkout-method`
-         */
         needsOnboarding(paymentMethod) {
-            return this.onboardingStatus(paymentMethod) !== 'active' && this.onboardingStatus(paymentMethod) !== 'limited';
+            return this.onboardingStatus(paymentMethod)?.toUpperCase() !== 'ACTIVE';
         },
 
-        /**
-         * @deprecated tag:v6.0.0 - has been moved to `swag-paypal-checkout-method`
-         */
         paymentMethodToggleDisabled(paymentMethod) {
             // should be able to deactivate active payment method
             if (paymentMethod.active) {
@@ -330,7 +231,7 @@ Component.register('swag-paypal-checkout', {
         },
 
         onboardingStatus(paymentMethod) {
-            return this.merchantInformation.capabilities[paymentMethod.id];
+            return this.merchantIntegrations[paymentMethod.id];
         },
 
         onChangePaymentMethodActive(paymentMethod) {
@@ -350,16 +251,13 @@ Component.register('swag-paypal-checkout', {
                 });
         },
 
-        /**
-         * @deprecated tag:v6.0.0 - has been moved to `swag-paypal-checkout-method`
-         */
         statusBadgeVariant(paymentMethod) {
             let variant;
 
             switch (this.onboardingStatus(paymentMethod)) {
                 case 'active': variant = 'success'; break;
                 case 'limited': variant = 'danger'; break;
-                case 'inactive': case 'ineligible': variant = 'neutral'; break;
+                case 'inactive': variant = 'neutral'; break;
                 case 'pending': variant = 'info'; break;
                 default: variant = 'neutral';
             }
@@ -367,9 +265,6 @@ Component.register('swag-paypal-checkout', {
             return variant;
         },
 
-        /**
-         * @deprecated tag:v6.0.0 - has been moved to `swag-paypal-checkout-method`
-         */
         statusBadgeColor(paymentMethod) {
             let variant;
 
@@ -381,7 +276,6 @@ Component.register('swag-paypal-checkout', {
                     variant = '#ff9800';
                     break;
                 case 'inactive':
-                case 'ineligible':
                     variant = '#52667A';
                     break;
                 case 'pending':
@@ -394,39 +288,16 @@ Component.register('swag-paypal-checkout', {
             return variant;
         },
 
-        /**
-         * @deprecated tag:v6.0.0 - has been moved to `swag-paypal-checkout-method`
-         */
         onboardingStatusText(paymentMethod) {
             const status = this.onboardingStatus(paymentMethod);
 
             return this.$tc(`swag-paypal.settingForm.checkout.onboardingStatusText.${status}`);
         },
 
-        /**
-         * @deprecated tag:v6.0.0 - has been moved to `swag-paypal-checkout-method`
-         */
-        onboardingStatusTooltip(paymentMethod) {
-            const status = this.onboardingStatus(paymentMethod);
-            const snippetKey = `swag-paypal.settingForm.checkout.onboardingStatusTooltip.${status}`;
-
-            if (!this.$te(snippetKey)) {
-                return null;
-            }
-
-            return this.$tc(snippetKey);
-        },
-
-        /**
-         * @deprecated tag:v6.0.0 - has been moved to `swag-paypal-checkout-method`
-         */
         showEditLink(paymentMethod) {
             return this.onboardingStatus(paymentMethod) === 'active';
         },
 
-        /**
-         * @deprecated tag:v6.0.0 - has been moved to `swag-paypal-checkout-method`
-         */
         availabilityToolTip(paymentMethod) {
             const handlerElements = paymentMethod.formattedHandlerIdentifier.split('_');
             const handlerName = handlerElements[handlerElements.length - 1];

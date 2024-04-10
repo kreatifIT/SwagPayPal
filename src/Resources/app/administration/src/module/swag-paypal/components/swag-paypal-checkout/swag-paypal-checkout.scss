@@ -3,53 +3,84 @@
 .swag-paypal-checkout {
     padding: 30px;
 
-    &__banner {
-        margin-top: 24px;
-    }
-
-    &__header {
-        font-weight: $font-weight-bold;
-        font-size: $font-size-large;
-        line-height: 42px;
+    &__image {
+        height: 30px;
     }
 
     &__description {
-        line-height: 25px;
+        margin-top: 32px;
     }
 
-    &__button-onboarding-sandbox {
-        margin-left: 12px;
-        font-weight: $font-weight-semi-bold;
-        font-size: $font-size-small;
+    &__banner {
+        margin-top: 32px;
     }
 
-    &__sandbox-toggle {
-        float: right;
-        margin-top: -15px;
+    &-container-onboarding {
+        display: flex;
+        justify-content: space-between;
     }
 
-    &__box {
-        background-color: $color-gray-50;
-        border: 1px solid $color-gray-300;
-        border-radius: $border-radius-default;
-        column-gap: 16px;
-        padding: 32px;
+    &-button__onboarding {
+        margin: 26px 0;
     }
 
-    &__merchant-information {
-        line-height: 24px;
-        font-weight: $font-weight-semi-bold;
-        font-size: $font-size-small;
-        margin-bottom: 8px;
+    .swag-paypal-checkout-payment-method__headline {
+        font-size: 18px;
+        line-height: 42px;
     }
 
-    &__payment-method-headline {
-        font-size: $font-size-large;
-        margin: 32px 0 8px;
+    .swag-paypal-checkout-payment-method__item {
+        border: 1px solid #d9dfe5;
+        border-radius: 4px;
+        height: 66px;
+        margin-bottom: 16px;
+
+        &-name-icon {
+            margin: 20px;
+        }
+
+        &-icon {
+            margin-right: 4px;
+        }
+
+        &-dynamic {
+            margin-top: 20px;
+            margin-right: 20px;
+            text-align: right;
+        }
+
+        &-show-detail-link {
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 16px;
+            color: $color-shopware-brand-500;
+        }
+
+        & .sw-field--switch {
+            margin: 8px 0;
+        }
+
+        .sw-help-text {
+            top: -3px;
+            margin-right: 10px;
+            position: relative;
+        }
     }
 
-    .sw-field--switch {
+    .swag-plugin-box-with-onboarding__status-label {
+        &.sw-label:not(.sw-label--appearance-badged) {
+            padding-left: 6px;
+            border-color: transparent;
+        }
+    }
+
+    .swag-plugin-box-with-onboarding__status-badge {
         margin: 0;
+    }
+
+    .swag-plugin-box-with-onboarding__status-text {
+        padding-left: 4px;
+        font-weight: 600;
     }
 }
 

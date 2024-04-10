@@ -11,7 +11,6 @@ use Shopware\Core\Framework\Context;
 use Swag\PayPal\RestApi\Client\PayPalClientFactoryInterface;
 use Swag\PayPal\RestApi\V1\Api\MerchantIntegrations;
 use Swag\PayPal\RestApi\V1\Resource\MerchantIntegrationsResourceInterface;
-use Swag\PayPal\Setting\Struct\MerchantInformationStruct;
 use Swag\PayPal\Util\Lifecycle\Method\AbstractMethodData;
 use Swag\PayPal\Util\Lifecycle\Method\PaymentMethodDataRegistry;
 use Swag\PayPal\Util\Lifecycle\Method\PayPalMethodData;
@@ -38,9 +37,6 @@ class MerchantIntegrationsService implements MerchantIntegrationsServiceInterfac
         $this->payPalClientFactory = $payPalClientFactory;
     }
 
-    /**
-     * @deprecated tag:v6.0.0 - will be removed, use $this->getMerchantInformation()->getCapabilities() instead
-     */
     public function fetchMerchantIntegrations(Context $context, ?string $salesChannelId = null): array
     {
         try {
@@ -51,48 +47,10 @@ class MerchantIntegrationsService implements MerchantIntegrationsServiceInterfac
             );
         } catch (\Throwable $e) {
             // just catch exceptions thrown in case of invalid credentials
+            $integrations = null;
         }
 
-        return $this->enrichCapabilities($integrations ?? null, $context, $salesChannelId);
-    }
-
-    public function getMerchantInformation(Context $context, ?string $salesChannelId = null): MerchantInformationStruct
-    {
-        $information = new MerchantInformationStruct();
-
-        try {
-            $integrations = $this->merchantIntegrationsResource->get(
-                $this->credentialsUtil->getMerchantPayerId($salesChannelId),
-                $salesChannelId,
-                $this->credentialsUtil->isSandbox($salesChannelId)
-            );
-
-            $information->setMerchantIntegrations($integrations);
-        } catch (\Throwable $e) {
-            // just catch exceptions thrown in case of invalid credentials
-        }
-
-        $information->setCapabilities($this->enrichCapabilities($integrations ?? null, $context, $salesChannelId));
-
-        return $information;
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function enrichCapabilities(?MerchantIntegrations $integrations, Context $context, ?string $salesChannelId = null): array
-    {
-        $capabilities = [];
-
-        foreach ($this->paymentMethodDataRegistry->getPaymentMethods() as $methodData) {
-            $paymentMethodId = $this->paymentMethodDataRegistry->getEntityIdFromData($methodData, $context);
-
-            if ($paymentMethodId === null) {
-                continue;
-            }
-
-            $capabilities[$paymentMethodId] = $integrations ? $methodData->validateCapability($integrations) : AbstractMethodData::CAPABILITY_INACTIVE;
-        }
+        $capabilities = $this->handleIntegrations($integrations, $context);
 
         if ($integrations !== null) {
             return $capabilities;
@@ -115,5 +73,22 @@ class MerchantIntegrationsService implements MerchantIntegrationsServiceInterfac
         }
 
         return $capabilities;
+    }
+
+    private function handleIntegrations(?MerchantIntegrations $integrations, Context $context): array
+    {
+        $methods = [];
+
+        foreach ($this->paymentMethodDataRegistry->getPaymentMethods() as $methodData) {
+            $paymentMethodId = $this->paymentMethodDataRegistry->getEntityIdFromData($methodData, $context);
+
+            if ($paymentMethodId === null) {
+                continue;
+            }
+
+            $methods[$paymentMethodId] = $integrations ? $methodData->validateCapability($integrations) : AbstractMethodData::CAPABILITY_INACTIVE;
+        }
+
+        return $methods;
     }
 }

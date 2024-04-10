@@ -23,6 +23,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Sorting\FieldSorting;
 use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Swag\PayPal\Checkout\Payment\Method\APMHandler;
+use Swag\PayPal\Checkout\Payment\Service\OrderExecuteService;
 use Swag\PayPal\Checkout\Payment\Service\TransactionDataService;
 use Swag\PayPal\OrdersApi\Builder\APM\AbstractAPMOrderBuilder;
 use Swag\PayPal\OrdersApi\Builder\APM\BancontactOrderBuilder;
@@ -37,6 +38,7 @@ use Swag\PayPal\OrdersApi\Builder\APM\OxxoOrderBuilder;
 use Swag\PayPal\OrdersApi\Builder\APM\P24OrderBuilder;
 use Swag\PayPal\OrdersApi\Builder\APM\SofortOrderBuilder;
 use Swag\PayPal\OrdersApi\Builder\APM\TrustlyOrderBuilder;
+use Swag\PayPal\OrdersApi\Patch\OrderNumberPatchBuilder;
 use Swag\PayPal\RestApi\PartnerAttributionId;
 use Swag\PayPal\RestApi\V2\Resource\OrderResource;
 use Swag\PayPal\Setting\Service\SettingsValidationService;
@@ -81,9 +83,9 @@ class APMHandlerTest extends TestCase
         $this->finalizePayment($transactionId, new Request(), $context, $paymentHandler);
         if (\method_exists(OrderTransactionStateHandler::class, 'processUnconfirmed') && \defined('Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStates::STATE_UNCONFIRMED')) {
             /** @phpstan-ignore-next-line */
-            $this->assertOrderTransactionState(OrderTransactionStates::STATE_UNCONFIRMED, $transactionId, $context->getContext());
+            $this->assertOrderTransactionState($orderBuilder->isCompleteOnApproval() ? OrderTransactionStates::STATE_UNCONFIRMED : OrderTransactionStates::STATE_PAID, $transactionId, $context->getContext());
         } else {
-            $this->assertOrderTransactionState(OrderTransactionStates::STATE_IN_PROGRESS, $transactionId, $context->getContext());
+            $this->assertOrderTransactionState($orderBuilder->isCompleteOnApproval() ? OrderTransactionStates::STATE_IN_PROGRESS : OrderTransactionStates::STATE_PAID, $transactionId, $context->getContext());
         }
     }
 
@@ -176,7 +178,15 @@ Required setting "SwagPayPal.settings.clientId" is missing or invalid');
         $orderResource = new OrderResource($clientFactory);
         $logger = new NullLogger();
 
+        $orderExecuteService = new OrderExecuteService(
+            $orderResource,
+            $this->getContainer()->get(OrderTransactionStateHandler::class),
+            new OrderNumberPatchBuilder(),
+            $logger
+        );
+
         return new APMHandler(
+            $orderExecuteService,
             $this->getContainer()->get(TransactionDataService::class),
             $this->getContainer()->get(OrderTransactionStateHandler::class),
             new SettingsValidationService($systemConfig, $logger),

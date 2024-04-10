@@ -137,7 +137,6 @@ class ExpressCategoryRouteTest extends TestCase
         } else {
             $this->removePaymentMethodFromDefaultsSalesChannel($paymentMethodId);
         }
-        $this->getContainer()->get(PaymentMethodUtil::class)->reset();
 
         $salesChannelContext = $this->getContainer()->get(SalesChannelContextFactory::class)->create(Uuid::randomHex(), Defaults::SALES_CHANNEL);
         $request = new Request([], [], [

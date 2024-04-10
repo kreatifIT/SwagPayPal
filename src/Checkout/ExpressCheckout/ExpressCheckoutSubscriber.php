@@ -10,7 +10,6 @@ namespace Swag\PayPal\Checkout\ExpressCheckout;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Customer\CustomerEvents;
 use Shopware\Core\Content\Cms\Events\CmsPageLoadedEvent;
-use Shopware\Core\Content\Product\ProductCollection;
 use Shopware\Core\Framework\Event\DataMappingEvent;
 use Shopware\Core\Framework\Struct\ArrayStruct;
 use Shopware\Core\Framework\Validation\BuildValidationEvent;
@@ -171,16 +170,14 @@ class ExpressCheckoutSubscriber implements EventSubscriberInterface
         }
 
         $productIds = [];
-        /** @var ProductCollection $products */
-        $products = $event->getResult()->getEntities();
-        foreach ($products as $product) {
+        foreach ($event->getResult()->getEntities() as $product) {
             $productIds[] = $product->getId();
             $productIds[] = $product->getParentId();
         }
 
         $excluded = $this->excludedProductValidator->findExcludedProducts(\array_filter($productIds), $event->getSalesChannelContext());
 
-        foreach ($products as $product) {
+        foreach ($event->getResult()->getEntities() as $product) {
             if (\in_array($product->getId(), $excluded, true) || ($product->getParentId() && \in_array($product->getParentId(), $excluded, true))) {
                 $product->addExtension(ExcludedProductValidator::PRODUCT_EXCLUDED_FOR_PAYPAL, new ArrayStruct());
             }

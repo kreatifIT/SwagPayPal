@@ -84,7 +84,14 @@ class CartPaymentBuilder extends AbstractPaymentBuilder implements CartPaymentBu
         $transaction->setAmount($amount);
 
         $itemListValid = true;
-        if ($this->systemConfigService->getBool(Settings::SUBMIT_CART, $salesChannelContext->getSalesChannelId())) {
+        // If its an express checkout process, use the ecs submit cart option
+        if ($isExpressCheckoutProcess && $this->systemConfigService->getBool(Settings::ECS_SUBMIT_CART, $salesChannelContext->getSalesChannelId())) {
+            $this->setItemList($transaction, $cart->getLineItems(), $currency);
+            $itemListValid = TransactionValidator::validateItemList([$transaction]);
+        }
+
+        // If its not an express checkout process, use the normal submit cart option
+        if (!$isExpressCheckoutProcess && $this->systemConfigService->getBool(Settings::SUBMIT_CART, $salesChannelContext->getSalesChannelId())) {
             $this->setItemList($transaction, $cart->getLineItems(), $currency);
             $itemListValid = TransactionValidator::validateItemList([$transaction]);
         }

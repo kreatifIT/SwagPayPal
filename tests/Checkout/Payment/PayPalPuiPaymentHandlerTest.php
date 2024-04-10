@@ -24,10 +24,10 @@ use Shopware\Core\System\StateMachine\StateMachineRegistry;
 use Swag\PayPal\Checkout\Payment\Handler\PlusPuiHandler;
 use Swag\PayPal\Checkout\Payment\PayPalPaymentHandler;
 use Swag\PayPal\Checkout\Payment\PayPalPuiPaymentHandler;
+use Swag\PayPal\PaymentsApi\Patch\CustomTransactionPatchBuilder;
 use Swag\PayPal\PaymentsApi\Patch\OrderNumberPatchBuilder;
 use Swag\PayPal\PaymentsApi\Patch\PayerInfoPatchBuilder;
 use Swag\PayPal\PaymentsApi\Patch\ShippingAddressPatchBuilder;
-use Swag\PayPal\PaymentsApi\Patch\TransactionPatchBuilder;
 use Swag\PayPal\Setting\Service\SettingsValidationService;
 use Swag\PayPal\Test\Helper\ConstantsForTesting;
 use Swag\PayPal\Test\Helper\OrderTransactionTrait;
@@ -136,16 +136,15 @@ Customer is not logged in.');
         $payerInfoPatchBuilder = new PayerInfoPatchBuilder();
         $shippingAddressPatchBuilder = new ShippingAddressPatchBuilder();
         $orderTransactionStateHandler = new OrderTransactionStateHandler($this->stateMachineRegistry);
-        $paymentBuilder = $this->createPaymentBuilder($systemConfig);
 
         return new PayPalPuiPaymentHandler(
             new PlusPuiHandler(
                 $paymentResource,
                 $this->orderTransactionRepo,
-                $paymentBuilder,
+                $this->createPaymentBuilder($systemConfig),
                 $payerInfoPatchBuilder,
                 new OrderNumberPatchBuilder(),
-                new TransactionPatchBuilder($paymentBuilder),
+                new CustomTransactionPatchBuilder(),
                 $shippingAddressPatchBuilder,
                 $systemConfig,
                 $orderTransactionStateHandler,

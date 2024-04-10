@@ -1,3 +1,4 @@
+/* eslint-disable import/no-unresolved */
 import Plugin from 'src/plugin-system/plugin.class';
 import StoreApiClient from 'src/service/store-api-client.service';
 import LoadingIndicator from 'src/utility/loading-indicator/loading-indicator.util';

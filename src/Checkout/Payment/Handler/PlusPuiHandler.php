@@ -19,10 +19,10 @@ use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Swag\PayPal\PaymentsApi\Builder\OrderPaymentBuilderInterface;
+use Swag\PayPal\PaymentsApi\Patch\CustomTransactionPatchBuilder;
 use Swag\PayPal\PaymentsApi\Patch\OrderNumberPatchBuilder;
 use Swag\PayPal\PaymentsApi\Patch\PayerInfoPatchBuilder;
 use Swag\PayPal\PaymentsApi\Patch\ShippingAddressPatchBuilder;
-use Swag\PayPal\PaymentsApi\Patch\TransactionPatchBuilder;
 use Swag\PayPal\RestApi\Exception\PayPalApiException;
 use Swag\PayPal\RestApi\PartnerAttributionId;
 use Swag\PayPal\RestApi\V1\Api\Patch;
@@ -35,9 +35,6 @@ use Swag\PayPal\Setting\Settings;
 use Swag\PayPal\SwagPayPal;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
-/**
- * @deprecated tag:v7.0.0 - Will be removed without replacement.
- */
 class PlusPuiHandler
 {
     public const PAYPAL_PAYMENT_ID_INPUT_NAME = 'paypalPaymentId';
@@ -51,7 +48,7 @@ class PlusPuiHandler
 
     private OrderNumberPatchBuilder $orderNumberPatchBuilder;
 
-    private TransactionPatchBuilder $transactionPatchBuilder;
+    private CustomTransactionPatchBuilder $customTransactionPatchBuilder;
 
     private PayerInfoPatchBuilder $payerInfoPatchBuilder;
 
@@ -69,7 +66,7 @@ class PlusPuiHandler
         OrderPaymentBuilderInterface $paymentBuilder,
         PayerInfoPatchBuilder $payerInfoPatchBuilder,
         OrderNumberPatchBuilder $orderNumberPatchBuilder,
-        TransactionPatchBuilder $transactionPatchBuilder,
+        CustomTransactionPatchBuilder $customTransactionPatchBuilder,
         ShippingAddressPatchBuilder $shippingAddressPatchBuilder,
         SystemConfigService $systemConfigService,
         OrderTransactionStateHandler $orderTransactionStateHandler,
@@ -79,7 +76,7 @@ class PlusPuiHandler
         $this->orderTransactionRepo = $orderTransactionRepo;
         $this->paymentBuilder = $paymentBuilder;
         $this->orderNumberPatchBuilder = $orderNumberPatchBuilder;
-        $this->transactionPatchBuilder = $transactionPatchBuilder;
+        $this->customTransactionPatchBuilder = $customTransactionPatchBuilder;
         $this->payerInfoPatchBuilder = $payerInfoPatchBuilder;
         $this->shippingAddressPatchBuilder = $shippingAddressPatchBuilder;
         $this->systemConfigService = $systemConfigService;
@@ -88,7 +85,7 @@ class PlusPuiHandler
     }
 
     /**
-     * @deprecated tag:v7.0.0 - Will be removed without replacement.
+     * @deprecated tag:v6.0.0 - Will be removed without replacement.
      */
     public function handlePlusPayment(
         AsyncPaymentTransactionStruct $transaction,
@@ -101,13 +98,11 @@ class PlusPuiHandler
         $paypalToken = $dataBag->get(self::PAYPAL_PAYMENT_TOKEN_INPUT_NAME);
         $this->addPayPalTransactionId($transaction, $paypalPaymentId, $salesChannelContext->getContext(), $paypalToken);
 
-        $patches = $this->transactionPatchBuilder->createTransactionPatch(
-            $transaction,
-            $salesChannelContext
-        );
-
-        $patches[] = $this->shippingAddressPatchBuilder->createShippingAddressPatch($customer);
-        $patches[] = $this->payerInfoPatchBuilder->createPayerInfoPatch($customer);
+        $patches = [
+            $this->shippingAddressPatchBuilder->createShippingAddressPatch($customer),
+            $this->payerInfoPatchBuilder->createPayerInfoPatch($customer),
+            $this->customTransactionPatchBuilder->createCustomTransactionPatch($transaction->getOrderTransaction()->getId()),
+        ];
 
         $this->patchPayPalPayment(
             $patches,
@@ -165,8 +160,6 @@ class PlusPuiHandler
     }
 
     /**
-     * @deprecated tag:v6.0.0 - parameter $orderNumberSendNeeded will be removed, will be false permanently
-     *
      * @throws AsyncPaymentFinalizeException
      */
     public function handleFinalizePayment(
@@ -251,7 +244,7 @@ class PlusPuiHandler
 
         $paymentState = $this->getPaymentState($response);
 
-        // apply the payment status if it's completed by PayPal
+        // apply the payment status if its completed by PayPal
         if ($paymentState === PaymentStatusV1::PAYMENT_COMPLETED) {
             $this->orderTransactionStateHandler->paid($transactionId, $context);
         }

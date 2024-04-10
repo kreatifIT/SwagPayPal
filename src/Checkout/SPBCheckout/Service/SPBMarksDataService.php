@@ -17,9 +17,6 @@ use Swag\PayPal\Setting\Settings;
 use Swag\PayPal\Util\LocaleCodeProvider;
 use Swag\PayPal\Util\PaymentMethodUtil;
 
-/**
- * @deprecated tag:v6.0.0 - will be removed without replacement, payment logos have been added natively
- */
 class SPBMarksDataService implements SPBMarksDataServiceInterface
 {
     private SettingsValidationServiceInterface $settingsValidationService;
@@ -72,7 +69,7 @@ class SPBMarksDataService implements SPBMarksDataServiceInterface
             'merchantPayerId' => $this->credentialsUtil->getMerchantPayerId($salesChannelId),
             'paymentMethodId' => (string) $this->paymentMethodUtil->getPayPalPaymentMethodId($salesChannelContext->getContext()),
             'useAlternativePaymentMethods' => $this->systemConfigService->getBool(Settings::SPB_ALTERNATIVE_PAYMENT_METHODS_ENABLED, $salesChannelId),
-            'showPayLater' => false,
+            'showPayLater' => $this->systemConfigService->getBool(Settings::SPB_SHOW_PAY_LATER, $salesChannelId),
             'languageIso' => $this->getButtonLanguage($salesChannelContext),
             'currency' => $salesChannelContext->getCurrency()->getIsoCode(),
             'intent' => \mb_strtolower($this->systemConfigService->getString(Settings::INTENT, $salesChannelId)),

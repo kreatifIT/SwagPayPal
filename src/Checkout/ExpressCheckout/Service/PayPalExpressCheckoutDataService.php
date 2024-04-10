@@ -102,7 +102,6 @@ class PayPalExpressCheckoutDataService implements ExpressCheckoutDataServiceInte
             ),
             'addErrorUrl' => $this->router->generate('store-api.paypal.error'),
             'cancelRedirectUrl' => $this->router->generate($addProductToCart ? 'frontend.checkout.cart.page' : 'frontend.checkout.register.page'),
-            'disablePayLater' => true,
         ]);
     }
 

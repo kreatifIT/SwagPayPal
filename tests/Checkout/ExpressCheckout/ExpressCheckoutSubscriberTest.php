@@ -261,7 +261,6 @@ class ExpressCheckoutSubscriberTest extends TestCase
     {
         $salesChannelContext = $this->createSalesChannelContext();
         $salesChannelContext->getSalesChannel()->setId(Uuid::randomHex());
-        $salesChannelContext->getSalesChannel()->setPaymentMethods(new PaymentMethodCollection());
         $event = new CheckoutRegisterPageLoadedEvent(
             new CheckoutRegisterPage(),
             $salesChannelContext,
@@ -342,6 +341,10 @@ class ExpressCheckoutSubscriberTest extends TestCase
 
     public function testAddExpressCheckoutDataToBuyBoxSwitchEvent(): void
     {
+        if (!\class_exists(SwitchBuyBoxVariantEvent::class)) {
+            static::markTestSkipped('Buy Box event only exists starting with Shopware 6.4.2.0');
+        }
+
         $event = $this->createBuyBoxSwitchEvent();
 
         $this->getExpressCheckoutSubscriber()->addExpressCheckoutDataToBuyBoxSwitch($event);
@@ -356,6 +359,10 @@ class ExpressCheckoutSubscriberTest extends TestCase
 
     public function testAddExpressCheckoutDataToBuyBoxSwitchWithInactivePaymentMethod(): void
     {
+        if (!\class_exists(SwitchBuyBoxVariantEvent::class)) {
+            static::markTestSkipped('Buy Box event only exists starting with Shopware 6.4.2.0');
+        }
+
         $event = $this->createBuyBoxSwitchEvent(false);
 
         $this->getExpressCheckoutSubscriber()->addExpressCheckoutDataToBuyBoxSwitch($event);
@@ -367,9 +374,12 @@ class ExpressCheckoutSubscriberTest extends TestCase
 
     public function testAddExpressCheckoutDataToBuyBoxSwitchWithoutPayPalInSalesChannel(): void
     {
+        if (!\class_exists(SwitchBuyBoxVariantEvent::class)) {
+            static::markTestSkipped('Buy Box event only exists starting with Shopware 6.4.2.0');
+        }
+
         $event = $this->createBuyBoxSwitchEvent();
         $event->getSalesChannelContext()->getSalesChannel()->setId(Uuid::randomHex());
-        $event->getSalesChannelContext()->getSalesChannel()->setPaymentMethods(new PaymentMethodCollection());
 
         $this->getExpressCheckoutSubscriber()->addExpressCheckoutDataToBuyBoxSwitch($event);
 
@@ -408,7 +418,6 @@ class ExpressCheckoutSubscriberTest extends TestCase
     {
         $event = $this->createQuickviewPageletLoadedEvent();
         $event->getSalesChannelContext()->getSalesChannel()->setId(Uuid::randomHex());
-        $event->getSalesChannelContext()->getSalesChannel()->setPaymentMethods(new PaymentMethodCollection());
 
         $this->getExpressCheckoutSubscriber()->addExpressCheckoutDataToPagelet($event);
 
@@ -617,13 +626,11 @@ class ExpressCheckoutSubscriberTest extends TestCase
 
         $criteria = new Criteria($paymentMethodIds);
         $criteria->addFilter(new EqualsFilter('active', true));
-
-        /** @var PaymentMethodCollection $paymentMethods */
         $paymentMethods = $paymentMethodRepo->search($criteria, $salesChannelContext->getContext())->getEntities();
+        static::assertInstanceOf(PaymentMethodCollection::class, $paymentMethods);
 
         $salesChannelContext->getSalesChannel()->setPaymentMethodIds($paymentMethodIds);
         $salesChannelContext->getSalesChannel()->setPaymentMethods($paymentMethods);
-        $this->getContainer()->get(PaymentMethodUtil::class)->reset();
 
         return $salesChannelContext;
     }

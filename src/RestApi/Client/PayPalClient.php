@@ -81,16 +81,6 @@ class PayPalClient extends AbstractClient implements PayPalClientInterface
         return $this->patch($resourceUri, $options);
     }
 
-    public function sendPutRequest(string $resourceUri, PayPalApiStruct $data, array $headers = []): array
-    {
-        $options = [
-            'headers' => $headers,
-            'json' => $data,
-        ];
-
-        return $this->put($resourceUri, $options);
-    }
-
     public function sendDeleteRequest(string $resourceUri, array $headers = []): array
     {
         $options = [

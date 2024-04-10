@@ -9,12 +9,9 @@ namespace Swag\PayPal\Checkout\SalesChannel;
 
 use OpenApi\Annotations as OA;
 use Shopware\Core\Checkout\Cart\SalesChannel\CartService;
-use Shopware\Core\Checkout\Order\OrderEntity;
 use Shopware\Core\Checkout\Payment\PaymentMethodCollection;
 use Shopware\Core\Checkout\Payment\SalesChannel\AbstractPaymentMethodRoute;
 use Shopware\Core\Checkout\Payment\SalesChannel\PaymentMethodRouteResponse;
-use Shopware\Core\Framework\Context;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Routing\Annotation\Entity;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
@@ -24,7 +21,6 @@ use Swag\PayPal\Checkout\Cart\Service\CartPriceService;
 use Swag\PayPal\Checkout\Cart\Service\ExcludedProductValidator;
 use Swag\PayPal\Setting\Exception\PayPalSettingsInvalidException;
 use Swag\PayPal\Setting\Service\SettingsValidationServiceInterface;
-use Swag\PayPal\Util\Availability\AvailabilityService;
 use Swag\PayPal\Util\Lifecycle\Method\PaymentMethodDataRegistry;
 use Symfony\Component\HttpFoundation\Exception\SessionNotFoundException;
 use Symfony\Component\HttpFoundation\Request;
@@ -50,10 +46,6 @@ class FilteredPaymentMethodRoute extends AbstractPaymentMethodRoute
 
     private ExcludedProductValidator $excludedProductValidator;
 
-    private AvailabilityService $availabilityService;
-
-    private EntityRepositoryInterface $orderRepository;
-
     public function __construct(
         AbstractPaymentMethodRoute $decorated,
         PaymentMethodDataRegistry $methodDataRegistry,
@@ -61,9 +53,7 @@ class FilteredPaymentMethodRoute extends AbstractPaymentMethodRoute
         CartService $cartService,
         CartPriceService $cartPriceService,
         ExcludedProductValidator $excludedProductValidator,
-        RequestStack $requestStack,
-        AvailabilityService $availabilityService,
-        EntityRepositoryInterface $orderRepository
+        RequestStack $requestStack
     ) {
         $this->decorated = $decorated;
         $this->methodDataRegistry = $methodDataRegistry;
@@ -72,8 +62,6 @@ class FilteredPaymentMethodRoute extends AbstractPaymentMethodRoute
         $this->cartPriceService = $cartPriceService;
         $this->excludedProductValidator = $excludedProductValidator;
         $this->requestStack = $requestStack;
-        $this->availabilityService = $availabilityService;
-        $this->orderRepository = $orderRepository;
     }
 
     public function getDecorated(): AbstractPaymentMethodRoute
@@ -124,7 +112,7 @@ class FilteredPaymentMethodRoute extends AbstractPaymentMethodRoute
     {
         $response = $this->getDecorated()->load($request, $context, $criteria);
 
-        if (!$request->query->getBoolean('onlyAvailable') && !$request->request->getBoolean('onlyAvailable')) {
+        if (!$request->query->getBoolean('onlyAvailable', false)) {
             return $response;
         }
 
@@ -157,31 +145,16 @@ class FilteredPaymentMethodRoute extends AbstractPaymentMethodRoute
         } catch (SessionNotFoundException $e) {
         }
 
-        $order = $this->checkOrder($request, $context->getContext());
-        if ($order !== null) {
-            $this->removePaymentMethods(
-                $response->getPaymentMethods(),
-                $this->availabilityService->filterPaymentMethodsByOrder($response->getPaymentMethods(), $cart, $order, $context)
-            );
-
-            return $response;
-        }
-
-        $this->removePaymentMethods(
-            $response->getPaymentMethods(),
-            $this->availabilityService->filterPaymentMethods($response->getPaymentMethods(), $cart, $context)
-        );
-
         return $response;
     }
 
     /**
-     * @param string[] $handlers
+     * @param string[] $ids
      */
-    private function removePaymentMethods(PaymentMethodCollection $paymentMethods, array $handlers): void
+    private function removePaymentMethods(PaymentMethodCollection $paymentMethods, array $ids): void
     {
         foreach ($paymentMethods as $paymentMethod) {
-            if (\in_array($paymentMethod->getHandlerIdentifier(), $handlers, true)) {
+            if (\in_array($paymentMethod->getHandlerIdentifier(), $ids, true)) {
                 $paymentMethods->remove($paymentMethod->getId());
             }
         }
@@ -194,25 +167,5 @@ class FilteredPaymentMethodRoute extends AbstractPaymentMethodRoute
                 $paymentMethods->remove($paymentMethod->getId());
             }
         }
-    }
-
-    private function checkOrder(Request $request, Context $context): ?OrderEntity
-    {
-        $orderId = $request->attributes->getAlnum('orderId');
-        if ($orderId) {
-            return $this->orderRepository->search(new Criteria([$orderId]), $context)->first();
-        }
-
-        $actualRequest = $this->requestStack->getCurrentRequest();
-        if (!$actualRequest) {
-            return null;
-        }
-
-        $orderId = $actualRequest->attributes->getAlnum('orderId');
-        if (!$orderId) {
-            return null;
-        }
-
-        return $this->orderRepository->search(new Criteria([$orderId]), $context)->first();
     }
 }

@@ -26,10 +26,6 @@
                 "label": "Setze PayPal als Standard"
             }
         },
-        "shippingAlert": {
-            "title": "Versandtracking jetzt verfügbar",
-            "message": "Sie können PayPal jetzt Paketverfolgungsdaten zur Verfügung stellen, wenn Sie in Ihren <a href=\"#/sw/settings/shipping/index\">Versandarten →</a> ein Standard-Versandunternehmen angeben."
-        },
         "general": {
             "mainMenuItemGeneral": "PayPal",
             "descriptionTextModule": "Einstellungen für PayPal"
@@ -40,25 +36,14 @@
             "testSandbox": "Sandbox-API-Zugangsdaten testen",
             "checkout": {
                 "cardTitle": "PayPal Checkout",
-                "settingsLink": "Einstellungen",
-                "header": "Mehr Zahlungsmöglichkeiten in einer Lösung von PayPal",
                 "description": "PayPal Checkout ist die neue All-in-One-Lösung, mit der Sie leistungsstarke und flexible Funktionen zur Zahlungsabwicklung auf Marktplätzen und anderen Handelsplattformen anbieten können.",
                 "banner": "Mit PayPal Checkout Kannst Du Deinen Kunden die Bezahlung per Rechnung, Kreditkarte und viele andere lokale Zahlungsmethoden anbieten. PayPal Checkout unterstützt Dich mit der neuesten Technologie und bringt Dir höchste Flexibilität. Du behältst Deine bisherigen Zahlungsarten und die Gebühren bleiben gleich! Aktiviere PayPal Checkout und deaktiviere PayPal PLUS, um doppelte Zahlungsmethoden in Deinem Shop zu vermeiden. <a href=\"https://www.shopware.com/de/news/paypal-launcht-neues-produkt/?utm_source=product&utm_medium=sw6-onprem&utm_campaign=paypal-checkout&utm_content=link-de-blog\" target=\"_blank\">Mehr Informationen</a>",
                 "button": {
-                  "liveTitle": "PayPal-Konto verbinden",
-                  "sandboxTitle": "PayPal-Sandbox-Konto verbinden",
-                  "changeLiveTitle": "Anderes Konto verbinden",
-                  "changeSandboxTitle": "Anderes Sandbox-Konto verbinden",
-                  "onboardingLiveTitle": "PayPal Checkout-Onboarding starten",
-                  "onboardingSandboxTitle": "PayPal Checkout-Sandbox-Onboarding starten",
-                  "restartOnboardingLiveTitle": "PayPal Checkout-Onboarding wiederholen",
-                  "restartOnboardingSandboxTitle": "PayPal Checkout-Sandbox-Onboarding wiederholen"
+                    "title": "Start des Onboarding"
                 },
                 "sandbox": {
                     "label": "Sandbox-Zugangsdaten verwenden",
-                    "onlySandboxTooltip": "Du bist bisher nur mit einem PayPal-Sandbox-Konto verbunden.",
-                    "onlyLiveTooltip": "Du bist bisher nur mit einem PayPal-Live-Konto verbunden.",
-                    "helpText": "Aktiviere diese Option, um die Integration zu testen."
+                    "tooltipText": "Aktiviere diese Option, um die Integration zu testen."
                 },
                 "switch": {
                     "label": "Aktiv"
@@ -66,7 +51,7 @@
                 "paymentMethodText": "Zahlungsmöglichkeiten",
                 "showCredentials": "Zeige API-Zugangsdaten",
                 "appImageAlt": "PayPal",
-                "editDetail": "Details bearbeiten",
+                "editDetail": "Bearbeiten",
                 "startOnboardingButtonLabel": "Onboarding starten",
                 "availabilityToolTip": {
                     "bancontactapmhandler": "Bancontact ist für die folgenden Länder verfügbar: Belgien",
@@ -79,23 +64,16 @@
                     "mybankapmhandler": "MyBank ist für die folgenden Länder verfügbar: Italien",
                     "oxxoapmhandler": "OXXO ist für die folgenden Länder verfügbar: Mexiko",
                     "p24apmhandler": "Przelewy24 ist für die folgenden Länder verfügbar: Polen",
-                    "paylaterhandler": "Später bezahlen ist für die folgenden Länder verfügbar: Australien, Deutschland, Frankreich, Italien, Spanien, Vereinigte Staaten, Vereinigtes Königreich",
                     "puihandler": "Rechnungskauf ist für die folgenden Länder verfügbar: Deutschland",
                     "sepahandler": "SEPA Lastschrift ist für die folgenden Länder verfügbar: Deutschland",
                     "sofortapmhandler": "Sofort ist für die folgenden Länder verfügbar: Belgien, Deutschland, Italien, Niederlande, Österreich, Spanien, Vereinigtes Königreich",
-                    "venmohandler": "Venmo ist für die folgenden Länder verfügbar: USA",
                     "trustlyapmhandler": "Trustly ist für die folgenden Länder verfügbar: Estland, Finnland, Niederlande, Schweden"
                 },
                 "onboardingStatusText": {
                     "active": "Autorisiert",
                     "limited": "Limitiert",
                     "pending": "Authorisierung ausstehend",
-                    "ineligible": "Gesperrt",
                     "inactive": "Onboarding benötigt"
-                },
-                "onboardingStatusTooltip": {
-                  "ineligible": "PayPal hat uns informiert, dass diese Zahlungsmethode aktuell für Ihren Account nicht freigeschaltet ist.",
-                  "limited": "PayPal hat uns informiert, dass Einschränkugen dieser Zahlungsart für Ihrem Account bestehen."
                 },
                 "paymentMethodStatusChangedSuccess": {
                     "active": "Zahlungsart \"{name}\" ist jetzt aktiv.",
@@ -261,13 +239,6 @@
                 "cardTitle": "Ratenzahlung",
                 "installmentBannerEnabled": {
                     "label": "Ratenzahlung Banner aktivieren"
-                }
-            },
-            "acdc": {
-                "cardTitle": "Kredit- oder Debitkarte",
-                "acdcForce3DS": {
-                    "label": "Transaktionen ausschließlich mit 3D Secure durchführen",
-                    "helpText": "Transaktionen werden bei nicht verfügbarem 3D Secure nicht akzeptiert."
                 }
             },
             "pui": {

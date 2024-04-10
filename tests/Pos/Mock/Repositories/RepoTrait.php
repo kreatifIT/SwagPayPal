@@ -25,7 +25,6 @@ trait RepoTrait
     public function __construct()
     {
         $collectionClass = $this->getDefinition()->getCollectionClass();
-        // @phpstan-ignore-next-line
         $this->entityCollection = new $collectionClass([]);
     }
 

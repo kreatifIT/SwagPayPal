@@ -7,17 +7,21 @@
 
 namespace Swag\PayPal\Util\Lifecycle\Method;
 
+use Shopware\Core\Checkout\Customer\Rule\BillingCountryRule;
+use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\Rule\Container\AndRule;
+use Shopware\Core\System\Currency\Rule\CurrencyRule;
 use Swag\PayPal\Checkout\Payment\Method\SEPAHandler;
 use Swag\PayPal\RestApi\V1\Api\MerchantIntegrations;
-use Swag\PayPal\RestApi\V1\Api\MerchantIntegrations\Product;
+use Swag\PayPal\RestApi\V1\Api\MerchantIntegrations\Capability;
 use Swag\PayPal\Storefront\Data\CheckoutDataMethodInterface;
 use Swag\PayPal\Storefront\Data\Service\AbstractCheckoutDataService;
 use Swag\PayPal\Storefront\Data\Service\SEPACheckoutDataService;
-use Swag\PayPal\Util\Availability\AvailabilityContext;
 
 class SEPAMethodData extends AbstractMethodData implements CheckoutDataMethodInterface
 {
     public const PAYPAL_SEPA_FIELD_DATA_EXTENSION_ID = 'payPalSEPAFieldData';
+    private const AVAILABILITY_RULE_NAME = 'PayPalSEPAAvailabilityRule';
 
     public function getTranslations(): array
     {
@@ -46,10 +50,34 @@ class SEPAMethodData extends AbstractMethodData implements CheckoutDataMethodInt
         return SEPAHandler::class;
     }
 
-    public function isAvailable(AvailabilityContext $availabilityContext): bool
+    public function getRuleData(Context $context): ?array
     {
-        return $availabilityContext->getCurrencyCode() === 'EUR'
-            && $availabilityContext->getBillingCountryCode() === 'DE';
+        return [
+            'name' => self::AVAILABILITY_RULE_NAME,
+            'priority' => 1,
+            'description' => 'Determines whether or not the PayPal - SEPA payment method is available for the given rule context.',
+            'conditions' => [
+                [
+                    'type' => (new AndRule())->getName(),
+                    'children' => [
+                        [
+                            'type' => (new BillingCountryRule())->getName(),
+                            'value' => [
+                                'operator' => BillingCountryRule::OPERATOR_EQ,
+                                'countryIds' => $this->getCountryIds(['DE'], $context),
+                            ],
+                        ],
+                        [
+                            'type' => (new CurrencyRule())->getName(),
+                            'value' => [
+                                'operator' => CurrencyRule::OPERATOR_EQ,
+                                'currencyIds' => $this->getCurrencyIds(['EUR'], $context),
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
     }
 
     public function getInitialState(): bool
@@ -74,11 +102,11 @@ class SEPAMethodData extends AbstractMethodData implements CheckoutDataMethodInt
 
     public function validateCapability(MerchantIntegrations $merchantIntegrations): string
     {
-        $product = $merchantIntegrations->getSpecificProduct('PPCP_STANDARD');
-        if ($product !== null && (\in_array($product->getVettingStatus(), [Product::VETTING_STATUS_APPROVED, Product::VETTING_STATUS_SUBSCRIBED], true))) {
+        $capability = $merchantIntegrations->getSpecificCapability('ALT_PAY_PROCESSING');
+        if ($capability !== null && $capability->getStatus() === Capability::STATUS_ACTIVE) {
             return self::CAPABILITY_ACTIVE;
         }
 
-        return self::CAPABILITY_INELIGIBLE;
+        return self::CAPABILITY_INACTIVE;
     }
 }

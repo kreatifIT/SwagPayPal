@@ -26,8 +26,12 @@
         <service id="Swag\PayPal\RestApi\V1\Resource\IdentityResource">
             <argument type="service" id="Swag\PayPal\RestApi\Client\PayPalClientFactory"/>
         </service>
-
+        
         <service id="Swag\PayPal\RestApi\V1\Resource\DisputeResource">
+            <argument type="service" id="Swag\PayPal\RestApi\Client\PayPalClientFactory"/>
+        </service>
+
+        <service id="Swag\PayPal\RestApi\V1\Resource\IdentityResource">
             <argument type="service" id="Swag\PayPal\RestApi\Client\PayPalClientFactory"/>
         </service>
 
@@ -40,10 +44,6 @@
         </service>
 
         <service id="Swag\PayPal\RestApi\V1\Resource\SaleResource">
-            <argument type="service" id="Swag\PayPal\RestApi\Client\PayPalClientFactory"/>
-        </service>
-
-        <service id="Swag\PayPal\RestApi\V1\Resource\ShippingResource">
             <argument type="service" id="Swag\PayPal\RestApi\Client\PayPalClientFactory"/>
         </service>
 

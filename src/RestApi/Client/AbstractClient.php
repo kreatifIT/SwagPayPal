@@ -45,11 +45,6 @@ abstract class AbstractClient
         return $this->request(Request::METHOD_PATCH, $uri, $options);
     }
 
-    protected function put(string $uri, array $options): array
-    {
-        return $this->request(Request::METHOD_PUT, $uri, $options);
-    }
-
     protected function delete(string $uri, array $options = []): array
     {
         return $this->request(Request::METHOD_DELETE, $uri, $options);
@@ -128,8 +123,7 @@ abstract class AbstractClient
             return new PayPalApiException('General Error', $exceptionMessage);
         }
 
-        $content = $exceptionResponse->getBody()->getContents();
-        $error = \json_decode($content, true) ?: [];
+        $error = \json_decode($exceptionResponse->getBody()->getContents(), true);
         if (\array_key_exists('error', $error) && \array_key_exists('error_description', $error)) {
             $this->logger->error($exceptionMessage, [
                 'error' => $error,
@@ -140,11 +134,7 @@ abstract class AbstractClient
             return new PayPalApiException($error['error'], $error['error_description'], (int) $requestException->getCode());
         }
 
-        if (\is_array($error['errors'] ?? null)) {
-            $error = \current($error['errors']);
-        }
-
-        $message = $error['message'] ?? $content;
+        $message = $error['message'];
         $issue = null;
 
         if (isset($error['details'])) {
@@ -169,6 +159,6 @@ abstract class AbstractClient
             'data' => $data,
         ]);
 
-        return new PayPalApiException($error['name'] ?? 'UNCLASSIFIED_ERROR', $message, (int) $requestException->getCode(), $issue);
+        return new PayPalApiException($error['name'], $message, (int) $requestException->getCode(), $issue);
     }
 }

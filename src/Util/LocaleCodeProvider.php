@@ -10,6 +10,7 @@ namespace Swag\PayPal\Util;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\System\Language\LanguageCollection;
 
 class LocaleCodeProvider
 {
@@ -25,8 +26,10 @@ class LocaleCodeProvider
         $languageId = $context->getLanguageId();
         $criteria = new Criteria([$languageId]);
         $criteria->addAssociation('locale');
-        $criteria->setLimit(1);
-        $language = $this->languageRepository->search($criteria, $context)->first();
+        /** @var LanguageCollection $languageCollection */
+        $languageCollection = $this->languageRepository->search($criteria, $context)->getEntities();
+
+        $language = $languageCollection->get($languageId);
         if ($language === null) {
             return 'en-GB';
         }

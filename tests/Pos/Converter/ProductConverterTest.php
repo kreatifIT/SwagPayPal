@@ -173,7 +173,7 @@ class ProductConverterTest extends TestCase
     {
         $productEntity = $this->createProductEntity();
         $productEntity->addTranslated('description', \str_repeat(self::PRODUCT_DESCRIPTION, 100));
-        static::assertGreaterThan(1024, \mb_strlen($productEntity->getTranslation('description') ?? ''));
+        static::assertGreaterThan(1024, \mb_strlen($productEntity->getTranslation('description')));
 
         $converted = $this->createProductConverter()->convertShopwareProducts(
             new ProductCollection([$productEntity]),
@@ -273,7 +273,7 @@ class ProductConverterTest extends TestCase
         return $tax;
     }
 
-    private function getCategory(): CategoryEntity
+    private function getCategory(): ?CategoryEntity
     {
         $criteria = new Criteria();
         $criteria->addAssociation('translation');
@@ -281,9 +281,6 @@ class ProductConverterTest extends TestCase
         /** @var EntityRepositoryInterface $categoryRepository */
         $categoryRepository = $this->getContainer()->get('category.repository');
 
-        $category = $categoryRepository->search($criteria, Context::createDefaultContext())->first();
-        static::assertNotNull($category);
-
-        return $category;
+        return $categoryRepository->search($criteria, Context::createDefaultContext())->first();
     }
 }

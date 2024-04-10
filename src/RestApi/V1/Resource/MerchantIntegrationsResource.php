@@ -11,7 +11,6 @@ use Swag\PayPal\RestApi\Client\PayPalClientFactoryInterface;
 use Swag\PayPal\RestApi\PartnerId;
 use Swag\PayPal\RestApi\V1\Api\MerchantIntegrations;
 use Swag\PayPal\RestApi\V1\RequestUriV1;
-use Swag\PayPal\Setting\Exception\PayPalInvalidApiCredentialsException;
 
 class MerchantIntegrationsResource implements MerchantIntegrationsResourceInterface
 {
@@ -25,10 +24,6 @@ class MerchantIntegrationsResource implements MerchantIntegrationsResourceInterf
 
     public function get(string $merchantId, ?string $salesChannelId = null, bool $sandboxActive = true): MerchantIntegrations
     {
-        if (!$merchantId) {
-            throw new PayPalInvalidApiCredentialsException();
-        }
-
         $partnerId = $sandboxActive ? PartnerId::SANDBOX : PartnerId::LIVE;
 
         $response = $this->payPalClientFactory->getPayPalClient($salesChannelId)->sendGetRequest(

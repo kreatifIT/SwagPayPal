@@ -15,9 +15,6 @@ use Swag\PayPal\RestApi\PayPalApiStruct;
  */
 class Product extends PayPalApiStruct
 {
-    public const VETTING_STATUS_APPROVED = 'APPROVED';
-    public const VETTING_STATUS_SUBSCRIBED = 'SUBSCRIBED';
-
     /**
      * @OA\Property(type="string")
      */

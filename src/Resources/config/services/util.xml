@@ -6,7 +6,7 @@
 
     <services>
         <service id="Swag\PayPal\Util\PaymentMethodUtil">
-            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="payment_method.repository"/>
             <argument type="service" id="sales_channel.repository"/>
         </service>
 
@@ -56,12 +56,13 @@
             <argument type="service" id="sales_channel.repository"/>
             <argument type="service" id="sales_channel_type.repository"/>
             <argument type="service" id="shipping_method.repository"/>
-            <argument type="service" id="payment_method.repository"/>
+            <argument type="service" id="Shopware\Core\Checkout\Payment\DataAbstractionLayer\PaymentMethodRepositoryDecorator"/>
         </service>
 
         <service id="Swag\PayPal\Util\Lifecycle\Installer\PaymentMethodInstaller" public="true">
             <argument type="service" id="payment_method.repository"/>
             <argument type="service" id="rule.repository"/>
+            <argument type="service" id="rule_condition.repository"/>
             <argument type="service" id="Shopware\Core\Framework\Plugin\Util\PluginIdProvider"/>
             <argument type="service" id="Swag\PayPal\Util\Lifecycle\Method\PaymentMethodDataRegistry"/>
             <argument type="service" id="Swag\PayPal\Util\Lifecycle\Installer\MediaInstaller"/>
@@ -152,20 +153,6 @@
         <service id="Swag\PayPal\Util\Lifecycle\Method\TrustlyMethodData"
                  parent="Swag\PayPal\Util\Lifecycle\Method\AbstractMethodData">
             <tag name="swag.paypal.payment.method.data"/>
-        </service>
-        <service id="Swag\PayPal\Util\Lifecycle\Method\VenmoMethodData"
-                 parent="Swag\PayPal\Util\Lifecycle\Method\AbstractMethodData">
-            <tag name="swag.paypal.payment.method.data"/>
-            <tag name="swag.paypal.payment.storefront.checkout.data"/>
-        </service>
-        <service id="Swag\PayPal\Util\Lifecycle\Method\PayLaterMethodData"
-                 parent="Swag\PayPal\Util\Lifecycle\Method\AbstractMethodData">
-            <tag name="swag.paypal.payment.method.data"/>
-            <tag name="swag.paypal.payment.storefront.checkout.data"/>
-        </service>
-
-        <service id="Swag\PayPal\Util\Availability\AvailabilityService">
-            <argument type="service" id="Swag\PayPal\Util\Lifecycle\Method\PaymentMethodDataRegistry"/>
         </service>
     </services>
 </container>

@@ -205,10 +205,7 @@ class StockSubscriberTest extends TestCase
         $order = $this->createOrder($context);
         $lineItems = $order->getLineItems();
         static::assertNotNull($lineItems);
-
-        /** @var OrderLineItemCollection $repoCollection */
-        $repoCollection = $orderLineItemRepository->getCollection();
-        $repoCollection->merge($lineItems);
+        $orderLineItemRepository->getCollection()->merge($lineItems);
 
         $callback($stockSubscriber, $order, $context);
         $messageBus->execute([$inventoryUpdateHandler]);

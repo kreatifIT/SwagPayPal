@@ -7,8 +7,6 @@ import SwagPayPalInstallmentBanner from './page/swag-paypal.installment-banner';
 import SwagPaypalAcdcFields from './checkout/swag-paypal.acdc-fields';
 import SwagPaypalPuiPolling from './swag-paypal.pui-polling';
 import SwagPaypalSepa from './checkout/swag-paypal.sepa';
-import SwagPaypalVenmo from './checkout/swag-paypal.venmo';
-import SwagPaypalPayLater from './checkout/swag-paypal.pay-later';
 import SwagPaypalFundingEligibility from './page/swag-paypal.funding-eligibility';
 
 // Register them via the existing PluginManager
@@ -52,16 +50,6 @@ PluginManager.register(
     'SwagPaypalSepa',
     SwagPaypalSepa,
     '[data-swag-paypal-sepa]',
-);
-PluginManager.register(
-    'SwagPaypalVenmo',
-    SwagPaypalVenmo,
-    '[data-swag-paypal-venmo]',
-);
-PluginManager.register(
-    'SwagPaypalPayLater',
-    SwagPaypalPayLater,
-    '[data-swag-paypal-pay-later]',
 );
 PluginManager.register(
     'SwagPaypalFundingEligibility',

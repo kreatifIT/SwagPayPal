@@ -11,7 +11,6 @@ use PHPUnit\Framework\TestCase;
 use Shopware\Core\Checkout\Payment\Cart\PaymentHandler\AsynchronousPaymentHandlerInterface;
 use Shopware\Core\Checkout\Payment\Cart\PaymentHandler\PaymentHandlerRegistry;
 use Shopware\Core\Checkout\Payment\Cart\PaymentHandler\SynchronousPaymentHandlerInterface;
-use Shopware\Core\Checkout\Payment\PaymentMethodCollection;
 use Shopware\Core\Checkout\Payment\PaymentMethodEntity;
 use Shopware\Core\Content\Media\Aggregate\MediaFolder\MediaFolderDefinition;
 use Shopware\Core\Content\Media\File\FileSaver;
@@ -19,15 +18,14 @@ use Shopware\Core\Content\Media\MediaDefinition;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\ContainsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Plugin\Util\PluginIdProvider;
 use Shopware\Core\Framework\Test\TestCaseBase\DatabaseTransactionBehaviour;
 use Shopware\Core\Framework\Test\TestCaseBase\KernelTestBehaviour;
-use Swag\PayPal\Checkout\Payment\PayPalPaymentHandler;
 use Swag\PayPal\Util\Lifecycle\Installer\MediaInstaller;
 use Swag\PayPal\Util\Lifecycle\Installer\PaymentMethodInstaller;
 use Swag\PayPal\Util\Lifecycle\Method\PaymentMethodDataRegistry;
+use Swag\PayPal\Util\Lifecycle\Method\PUIMethodData;
 
 class PaymentMethodInstallerTest extends TestCase
 {
@@ -36,6 +34,8 @@ class PaymentMethodInstallerTest extends TestCase
 
     private EntityRepositoryInterface $ruleRepository;
 
+    private EntityRepositoryInterface $ruleConditionRepository;
+
     private EntityRepositoryInterface $paymentMethodRepository;
 
     protected function setUp(): void
@@ -43,6 +43,9 @@ class PaymentMethodInstallerTest extends TestCase
         /** @var EntityRepositoryInterface $ruleRepository */
         $ruleRepository = $this->getContainer()->get('rule.repository');
         $this->ruleRepository = $ruleRepository;
+        /** @var EntityRepositoryInterface $ruleConditionRepository */
+        $ruleConditionRepository = $this->getContainer()->get('rule_condition.repository');
+        $this->ruleConditionRepository = $ruleConditionRepository;
         /** @var EntityRepositoryInterface $paymentMethodRepository */
         $paymentMethodRepository = $this->getContainer()->get('payment_method.repository');
         $this->paymentMethodRepository = $paymentMethodRepository;
@@ -54,25 +57,18 @@ class PaymentMethodInstallerTest extends TestCase
     public function testUninstallDeletesRule(bool $useContainer): void
     {
         $context = Context::createDefaultContext();
+        $installer = $this->createInstaller($useContainer);
+
+        $ruleName = (new PUIMethodData($this->getContainer()))->getRuleData($context)['name'] ?? 'invalid';
 
         $criteria = new Criteria();
-        $criteria->addFilter(new EqualsFilter('handlerIdentifier', PayPalPaymentHandler::class));
-        $paymentMethodId = $this->paymentMethodRepository->searchIds($criteria, $context)->firstId();
-        static::assertNotNull($paymentMethodId);
+        $criteria->addFilter(new EqualsFilter('name', $ruleName));
 
-        $this->ruleRepository->upsert([[
-            'name' => 'PayPalTestAvailabilityRule',
-            'priority' => 1,
-            'paymentMethods' => [
-                ['id' => $paymentMethodId],
-            ],
-        ]], $context);
+        $puiRuleId = $this->ruleRepository->searchIds($criteria, $context)->firstId();
+        static::assertNotNull($puiRuleId);
 
-        $installer = $this->createInstaller($useContainer);
         $installer->removeRules($context);
 
-        $criteria = new Criteria();
-        $criteria->addFilter(new ContainsFilter('name', 'PayPal'));
         $puiRuleId = $this->ruleRepository->searchIds($criteria, $context)->firstId();
         static::assertNull($puiRuleId);
     }
@@ -86,7 +82,6 @@ class PaymentMethodInstallerTest extends TestCase
         $installer = $this->createInstaller($useContainer);
         $installer->installAll($context);
 
-        /** @var PaymentMethodCollection $paymentMethods */
         $paymentMethods = $this->paymentMethodRepository->search(new Criteria(), $context);
         $savedHandlers = \array_map(static function (PaymentMethodEntity $paymentMethod) {
             return $paymentMethod->getHandlerIdentifier();
@@ -136,6 +131,7 @@ class PaymentMethodInstallerTest extends TestCase
         return new PaymentMethodInstaller(
             $this->paymentMethodRepository,
             $this->ruleRepository,
+            $this->ruleConditionRepository,
             $this->getContainer()->get(PluginIdProvider::class),
             new PaymentMethodDataRegistry(
                 $this->paymentMethodRepository,

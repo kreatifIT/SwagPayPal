@@ -20,7 +20,6 @@ use Shopware\Core\Framework\Routing\Annotation\Since;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\StateMachine\Exception\IllegalTransitionException;
 use Shopware\Core\System\StateMachine\Exception\UnnecessaryTransitionException;
-use Swag\PayPal\Checkout\Payment\Service\TransactionDataService;
 use Swag\PayPal\Checkout\PUI\Exception\MissingPaymentInstructionsException;
 use Swag\PayPal\Checkout\PUI\Exception\PaymentInstructionsNotReadyException;
 use Swag\PayPal\RestApi\V2\Api\Order\PaymentSource\PayUponInvoice;
@@ -40,18 +39,11 @@ class PUIPaymentInstructionsRoute extends AbstractPUIPaymentInstructionsRoute
 
     private OrderTransactionStateHandler $orderTransactionStateHandler;
 
-    private TransactionDataService $transactionDataService;
-
-    public function __construct(
-        EntityRepositoryInterface $orderTransactionRepository,
-        OrderResource $orderResource,
-        OrderTransactionStateHandler $orderTransactionStateHandler,
-        TransactionDataService $transactionDataService
-    ) {
+    public function __construct(EntityRepositoryInterface $orderTransactionRepository, OrderResource $orderResource, OrderTransactionStateHandler $orderTransactionStateHandler)
+    {
         $this->orderTransactionRepository = $orderTransactionRepository;
         $this->orderResource = $orderResource;
         $this->orderTransactionStateHandler = $orderTransactionStateHandler;
-        $this->transactionDataService = $transactionDataService;
     }
 
     public function getDecorated(): AbstractPUIPaymentInstructionsRoute
@@ -145,8 +137,6 @@ class PUIPaymentInstructionsRoute extends AbstractPUIPaymentInstructionsRoute
                 SwagPayPal::ORDER_TRANSACTION_CUSTOM_FIELDS_PAYPAL_PUI_INSTRUCTION => $instructions,
             ],
         ]], $salesChannelContext->getContext());
-
-        $this->transactionDataService->setResourceId($order, $transactionId, $salesChannelContext->getContext());
 
         $this->orderTransactionStateHandler->paid($transactionId, $salesChannelContext->getContext());
 

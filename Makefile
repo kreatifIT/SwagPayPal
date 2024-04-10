@@ -21,7 +21,7 @@ ecs-fix: ## Run easy coding standard on php
 phpstan:
 	@composer dump-autoload --dev
 	@php $(PLUGIN_ROOT)/bin/phpstan-config-generator.php
-	@php $(PLATFORM_ROOT)/vendor/bin/phpstan analyze --configuration $(PLUGIN_ROOT)/phpstan.neon
+	@php $(PLATFORM_ROOT)/vendor/bin/phpstan analyze --configuration $(PLUGIN_ROOT)/phpstan.neon src tests
 .PHONY: phpstan
 
 psalm:
@@ -39,37 +39,17 @@ phpunit-coverage:
 .PHONY: phpunit
 
 administration-fix: ## Run eslint on the administration files
-	$(PLATFORM_ROOT)/src/Administration/Resources/app/administration/node_modules/.bin/eslint \
-	    --ignore-path .eslintignore \
-	    --rule 'sw-deprecation-rules/private-feature-declarations: off' \
-	    --config $(PLATFORM_ROOT)/src/Administration/Resources/app/administration/.eslintrc.js \
-	    --ext .js,.vue \
-	    --fix \
-	    src/Resources/app/administration
+	$(PLATFORM_ROOT)/src/Administration/Resources/app/administration/node_modules/.bin/eslint --ignore-path .eslintignore --config $(PLATFORM_ROOT)/src/Administration/Resources/app/administration/.eslintrc.js --ext .js,.vue --fix src/Resources/app/administration
 .PHONY: administration-fix
 
 storefront-fix: ## Run eslint on the storefront files
-	$(PLATFORM_ROOT)/src/Administration/Resources/app/administration/node_modules/.bin/eslint \
-	    --ignore-path .eslintignore \
-	    --config $(PLATFORM_ROOT)/src/Storefront/Resources/app/storefront/.eslintrc.js \
-	    --ext .js,.vue \
-	    --fix \
-	    src/Resources/app/storefront
+	$(PLATFORM_ROOT)/src/Administration/Resources/app/administration/node_modules/.bin/eslint --ignore-path .eslintignore --config $(PLATFORM_ROOT)/src/Administration/Resources/app/administration/.eslintrc.js --ext .js,.vue --fix src/Resources/app/storefront
 .PHONY: storefront-fix
 
 administration-lint: ## Run eslint on the administration files
-	$(PLATFORM_ROOT)/src/Administration/Resources/app/administration/node_modules/.bin/eslint \
-	    --ignore-path .eslintignore \
-	    --rule 'sw-deprecation-rules/private-feature-declarations: off' \
-	    --config $(PLATFORM_ROOT)/src/Administration/Resources/app/administration/.eslintrc.js \
-	    --ext .js,.vue \
-	    src/Resources/app/administration
+	$(PLATFORM_ROOT)/src/Administration/Resources/app/administration/node_modules/.bin/eslint --ignore-path .eslintignore --config $(PLATFORM_ROOT)/src/Administration/Resources/app/administration/.eslintrc.js --ext .js,.vue src/Resources/app/administration
 .PHONY: administration-lint
 
 storefront-lint: ## Run eslint on the storefront files
-	$(PLATFORM_ROOT)/src/Administration/Resources/app/administration/node_modules/.bin/eslint \
-	    --ignore-path .eslintignore \
-	    --config $(PLATFORM_ROOT)/src/Storefront/Resources/app/storefront/.eslintrc.js \
-	    --ext .js,.vue \
-	    src/Resources/app/storefront
+	$(PLATFORM_ROOT)/src/Administration/Resources/app/administration/node_modules/.bin/eslint --ignore-path .eslintignore --config $(PLATFORM_ROOT)/src/Administration/Resources/app/administration/.eslintrc.js --ext .js,.vue src/Resources/app/storefront
 .PHONY: storefront-lint

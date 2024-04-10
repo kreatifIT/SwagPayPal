@@ -64,20 +64,6 @@ class GetOrderAuthorization
                     ],
                 ],
             ],
-            'payment_source' => [
-                'card' => [
-                    'last_digits' => '7109',
-                    'brand' => 'VISA',
-                    'type' => 'CREDIT',
-                    'authentication_result' => [
-                        'liability_shift' => 'POSSIBLE',
-                        'three_d_secure' => [
-                            'enrollment_status' => 'Y',
-                            'authentication_status' => 'Y',
-                        ],
-                    ],
-                ],
-            ],
             'payer' => [
                 'name' => [
                     'given_name' => 'Test',

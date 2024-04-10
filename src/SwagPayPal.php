@@ -41,7 +41,6 @@ class SwagPayPal extends Plugin
     public const ORDER_TRANSACTION_CUSTOM_FIELDS_PAYPAL_ORDER_ID = 'swag_paypal_order_id';
     public const ORDER_TRANSACTION_CUSTOM_FIELDS_PAYPAL_PARTNER_ATTRIBUTION_ID = 'swag_paypal_partner_attribution_id';
     public const ORDER_TRANSACTION_CUSTOM_FIELDS_PAYPAL_RESOURCE_ID = 'swag_paypal_resource_id';
-    public const SHIPPING_METHOD_CUSTOM_FIELDS_CARRIER = 'swag_paypal_carrier';
     public const SALES_CHANNEL_TYPE_POS = '1ce0868f406d47d98cfe4b281e62f099';
     public const SALES_CHANNEL_POS_EXTENSION = 'paypalPosSalesChannel';
     public const PRODUCT_LOG_POS_EXTENSION = 'paypalPosLog';
@@ -105,6 +104,8 @@ class SwagPayPal extends Plugin
         $posWebhookService = $this->container->get(PosWebhookService::class, ContainerInterface::NULL_ON_INVALID_REFERENCE);
         /** @var EntityRepositoryInterface $ruleRepository */
         $ruleRepository = $this->container->get('rule.repository');
+        /** @var EntityRepositoryInterface $ruleConditionRepository */
+        $ruleConditionRepository = $this->container->get('rule_condition.repository');
         /** @var EntityRepositoryInterface $mediaRepository */
         $mediaRepository = $this->container->get('media.repository');
         /** @var EntityRepositoryInterface $mediaFolderRepository */
@@ -130,6 +131,7 @@ class SwagPayPal extends Plugin
             $paymentMethodInstaller ?? new PaymentMethodInstaller(
                 $paymentMethodRepository,
                 $ruleRepository,
+                $ruleConditionRepository,
                 $this->container->get(PluginIdProvider::class),
                 $paymentMethodDataRegistry,
                 $mediaInstaller ?? new MediaInstaller(
@@ -198,6 +200,8 @@ class SwagPayPal extends Plugin
         $paymentMethodRepository = $this->container->get('payment_method.repository');
         /** @var EntityRepositoryInterface $ruleRepository */
         $ruleRepository = $this->container->get('rule.repository');
+        /** @var EntityRepositoryInterface $ruleConditionRepository */
+        $ruleConditionRepository = $this->container->get('rule_condition.repository');
         /** @var EntityRepositoryInterface $mediaRepository */
         $mediaRepository = $this->container->get('media.repository');
         /** @var EntityRepositoryInterface $mediaFolderRepository */
@@ -207,6 +211,7 @@ class SwagPayPal extends Plugin
             new PaymentMethodInstaller(
                 $paymentMethodRepository,
                 $ruleRepository,
+                $ruleConditionRepository,
                 $this->container->get(PluginIdProvider::class),
                 new PaymentMethodDataRegistry(
                     $paymentMethodRepository,
@@ -220,7 +225,7 @@ class SwagPayPal extends Plugin
                 ),
             ),
             new SettingsInstaller($systemConfigRepository, $this->container->get(SystemConfigService::class)),
-            new PosInstaller($this->container->get(Connection::class)),
+            new PosInstaller($this->container->get(Connection::class))
         );
     }
 }

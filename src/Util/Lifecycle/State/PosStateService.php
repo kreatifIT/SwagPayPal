@@ -7,6 +7,7 @@
 
 namespace Swag\PayPal\Util\Lifecycle\State;
 
+use Shopware\Core\Checkout\Payment\DataAbstractionLayer\PaymentMethodRepositoryDecorator;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -24,18 +25,18 @@ class PosStateService
 
     private EntityRepositoryInterface $shippingRepository;
 
-    private EntityRepositoryInterface $paymentMethodRepository;
+    private PaymentMethodRepositoryDecorator $paymentMethodRepoDecorator;
 
     public function __construct(
         EntityRepositoryInterface $salesChannelRepository,
         EntityRepositoryInterface $salesChannelTypeRepository,
         EntityRepositoryInterface $shippingRepository,
-        EntityRepositoryInterface $paymentMethodRepository
+        PaymentMethodRepositoryDecorator $paymentMethodRepoDecorator
     ) {
         $this->salesChannelRepository = $salesChannelRepository;
         $this->salesChannelTypeRepository = $salesChannelTypeRepository;
         $this->shippingRepository = $shippingRepository;
-        $this->paymentMethodRepository = $paymentMethodRepository;
+        $this->paymentMethodRepoDecorator = $paymentMethodRepoDecorator;
     }
 
     public function addPosSalesChannelType(Context $context): void
@@ -97,17 +98,7 @@ class PosStateService
 
     public function removePosDefaultEntities(Context $context): void
     {
+        $this->paymentMethodRepoDecorator->internalDelete([['id' => InformationDefaultService::POS_PAYMENT_METHOD_ID]], $context);
         $this->shippingRepository->delete([['id' => InformationDefaultService::POS_SHIPPING_METHOD_ID]], $context);
-
-        $paymentMethodId = $this->paymentMethodRepository->searchIds(new Criteria([InformationDefaultService::POS_PAYMENT_METHOD_ID]), $context)->firstId();
-        if ($paymentMethodId === null) {
-            return;
-        }
-
-        $this->paymentMethodRepository->update([[
-            'id' => InformationDefaultService::POS_PAYMENT_METHOD_ID,
-            'pluginId' => null,
-        ]], $context);
-        $this->paymentMethodRepository->delete([['id' => InformationDefaultService::POS_PAYMENT_METHOD_ID]], $context);
     }
 }

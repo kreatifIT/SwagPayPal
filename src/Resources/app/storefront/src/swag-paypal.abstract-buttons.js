@@ -1,3 +1,5 @@
+/* eslint-disable import/no-unresolved */
+
 import Plugin from 'src/plugin-system/plugin.class';
 import DomAccess from 'src/helper/dom-access.helper';
 import { loadScript } from '@paypal/paypal-js';
@@ -59,17 +61,16 @@ export default class SwagPaypalAbstractButtons extends Plugin {
             locale: this.options.languageIso,
             currency: this.options.currency,
             intent: this.options.intent,
-            'enable-funding': 'paylater,venmo',
         };
-
-        if (this.options.disablePayLater) {
-            config['enable-funding'] = 'venmo';
-        }
 
         if (this.options.useAlternativePaymentMethods === false) {
             config['disable-funding'] = availableAPMs.join(',');
         } else if (Array.isArray(this.options.disabledAlternativePaymentMethods)) {
             config['disable-funding'] = this.options.disabledAlternativePaymentMethods.join(',');
+        }
+
+        if (this.options.showPayLater === true) {
+            config['enable-funding'] = 'paylater';
         }
 
         if (this.options.merchantPayerId) {

@@ -14,10 +14,7 @@ use Shopware\Core\Checkout\Payment\Exception\AsyncPaymentFinalizeException;
 use Shopware\Core\Checkout\Payment\Exception\AsyncPaymentProcessException;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
-use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Swag\PayPal\Checkout\Payment\Method\AbstractPaymentMethodHandler;
-use Swag\PayPal\Checkout\Payment\PayPalPaymentHandler;
 use Swag\PayPal\Checkout\Payment\Service\OrderExecuteService;
 use Swag\PayPal\Checkout\Payment\Service\OrderPatchService;
 use Swag\PayPal\Checkout\Payment\Service\TransactionDataService;
@@ -25,7 +22,6 @@ use Swag\PayPal\OrdersApi\Builder\OrderFromOrderBuilder;
 use Swag\PayPal\RestApi\PartnerAttributionId;
 use Swag\PayPal\RestApi\V2\Api\Order as PayPalOrder;
 use Swag\PayPal\RestApi\V2\Resource\OrderResource;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class PayPalHandler extends AbstractPaymentHandler
 {
@@ -68,6 +64,8 @@ class PayPalHandler extends AbstractPaymentHandler
         CustomerEntity $customer
     ): PayPalOrder {
         $this->logger->debug('Started');
+        $salesChannelId = $salesChannelContext->getSalesChannel()->getId();
+        $orderTransactionId = $transaction->getOrderTransaction()->getId();
 
         $paypalOrder = $this->orderBuilder->getOrder(
             $transaction,
@@ -78,18 +76,18 @@ class PayPalHandler extends AbstractPaymentHandler
         try {
             $paypalOrderResponse = $this->orderResource->create(
                 $paypalOrder,
-                $salesChannelContext->getSalesChannelId(),
+                $salesChannelId,
                 PartnerAttributionId::PAYPAL_CLASSIC
             );
         } catch (\Exception $e) {
             throw new AsyncPaymentProcessException(
-                $transaction->getOrderTransaction()->getId(),
+                $orderTransactionId,
                 \sprintf('An error occurred during the communication with PayPal%s%s', \PHP_EOL, $e->getMessage())
             );
         }
 
         $this->transactionDataService->setOrderId(
-            $transaction->getOrderTransaction()->getId(),
+            $orderTransactionId,
             $paypalOrderResponse->getId(),
             PartnerAttributionId::PAYPAL_CLASSIC,
             $salesChannelContext->getContext()
@@ -98,48 +96,7 @@ class PayPalHandler extends AbstractPaymentHandler
         return $paypalOrderResponse;
     }
 
-    public function handlePreparedOrder(
-        AsyncPaymentTransactionStruct $transaction,
-        RequestDataBag $dataBag,
-        SalesChannelContext $salesChannelContext
-    ): RedirectResponse {
-        $this->logger->debug('Started');
-        $paypalOrderId = $dataBag->get(AbstractPaymentMethodHandler::PAYPAL_PAYMENT_ORDER_ID_INPUT_NAME);
-        $isECS = $dataBag->get(PayPalPaymentHandler::PAYPAL_EXPRESS_CHECKOUT_ID);
-
-        $this->transactionDataService->setOrderId(
-            $transaction->getOrderTransaction()->getId(),
-            $paypalOrderId,
-            $isECS ? PartnerAttributionId::PAYPAL_EXPRESS_CHECKOUT : PartnerAttributionId::SMART_PAYMENT_BUTTONS,
-            $salesChannelContext->getContext()
-        );
-
-        try {
-            $this->orderPatchService->patchOrder(
-                $transaction->getOrder(),
-                $transaction->getOrderTransaction(),
-                $salesChannelContext,
-                $paypalOrderId,
-                $isECS ? PartnerAttributionId::PAYPAL_EXPRESS_CHECKOUT : PartnerAttributionId::SMART_PAYMENT_BUTTONS
-            );
-        } catch (\Exception $e) {
-            throw new AsyncPaymentProcessException(
-                $transaction->getOrderTransaction()->getId(),
-                \sprintf('An error occurred during the communication with PayPal%s%s', \PHP_EOL, $e->getMessage())
-            );
-        }
-
-        $parameters = \http_build_query([
-            PayPalPaymentHandler::PAYPAL_REQUEST_PARAMETER_TOKEN => $paypalOrderId,
-            $isECS ? PayPalPaymentHandler::PAYPAL_EXPRESS_CHECKOUT_ID : PayPalPaymentHandler::PAYPAL_SMART_PAYMENT_BUTTONS_ID => true,
-        ]);
-
-        return new RedirectResponse(\sprintf('%s&%s', $transaction->getReturnUrl(), $parameters));
-    }
-
     /**
-     * @deprecated tag:v6.0.0 - Parameter $orderDataPatchNeeded will be removed, will be false permanently
-     *
      * @throws AsyncPaymentFinalizeException
      */
     public function handleFinalizeOrder(
@@ -163,9 +120,9 @@ class PayPalHandler extends AbstractPaymentHandler
                 );
             }
 
-            $paypalOrder = $this->orderExecuteService->captureOrAuthorizeOrder(
+            $paypalOrder = $this->orderExecuteService->executeOrder(
                 $transaction->getOrderTransaction()->getId(),
-                $this->orderResource->get($paypalOrderId, $salesChannelId),
+                $paypalOrderId,
                 $salesChannelId,
                 $context,
                 $partnerAttributionId

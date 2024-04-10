@@ -51,8 +51,6 @@ class ExpressCheckoutButtonData extends Struct
 
     protected string $cancelRedirectUrl;
 
-    protected bool $disablePayLater;
-
     public function getProductDetailEnabled(): bool
     {
         return $this->productDetailEnabled;
@@ -156,15 +154,5 @@ class ExpressCheckoutButtonData extends Struct
     public function getCancelRedirectUrl(): string
     {
         return $this->cancelRedirectUrl;
-    }
-
-    public function isDisablePayLater(): bool
-    {
-        return $this->disablePayLater;
-    }
-
-    public function setDisablePayLater(bool $disablePayLater): void
-    {
-        $this->disablePayLater = $disablePayLater;
     }
 }

@@ -61,10 +61,10 @@ class InformationDefaultService
         AdditionalInformation $information,
         Context $context
     ): void {
-        $information->setPaymentMethodId($this->getPaymentMethodId($context));
-        $information->setShippingMethodId($this->getShippingMethodId($context));
         $information->setCustomerGroupId($this->getCustomerGroupId($context));
         $information->setNavigationCategoryId($this->getNavigationCategoryId($context));
+        $information->setPaymentMethodId($this->getPaymentMethodId($context));
+        $information->setShippingMethodId($this->getShippingMethodId($context));
     }
 
     private function getCustomerGroupId(Context $context): string

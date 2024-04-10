@@ -64,14 +64,14 @@ class ItemListProviderTest extends TestCase
     /**
      * @dataProvider dataProviderQuantityConstellation
      */
-    public function testRoundingError(float $productPrice, int $quantity, string $title, int $expectedQuantity, string $expectedUnitPrice, string $expectedTaxValue, bool $hasTaxes): void
+    public function testRoundingError(int $quantity, string $title, int $expectedQuantity, string $expectedUnitPrice): void
     {
-        $lineItem = $this->createLineItem('test', $productPrice, null, $hasTaxes, $quantity);
+        $lineItem = $this->createLineItem('test', 10.002, null, false, $quantity);
         $lineItems = new OrderLineItemCollection([$lineItem]);
 
         $order = new OrderEntity();
         $order->setLineItems($lineItems);
-        $order->setTaxStatus($hasTaxes ? CartPrice::TAX_STATE_NET : CartPrice::TAX_STATE_GROSS);
+        $order->setTaxStatus(CartPrice::TAX_STATE_GROSS);
 
         $itemList = $this->createItemListProvider()->getItemList($this->createCurrency(), $order);
         $item = \current($itemList);
@@ -79,8 +79,6 @@ class ItemListProviderTest extends TestCase
         static::assertSame($title, $item->getName());
         static::assertSame($expectedQuantity, $item->getQuantity());
         static::assertSame($expectedUnitPrice, $item->getUnitAmount()->getValue());
-        static::assertSame($hasTaxes ? 19.0 : 0.0, $item->getTaxRate());
-        static::assertSame($expectedTaxValue, $item->getTax()->getValue());
     }
 
     public function testLineItemLabelTooLongIsTruncated(): void
@@ -115,16 +113,10 @@ class ItemListProviderTest extends TestCase
     public function dataProviderQuantityConstellation(): iterable
     {
         return [
-            [10.002, 1, 'test', 1, '10.00', '1.90', true],
-            [10.002, 1, 'test', 1, '10.00', '0.00', false],
-            [10.002, 2, 'test', 2, '10.00', '1.90', true],
-            [10.002, 2, 'test', 2, '10.00', '0.00', false],
-            [10.002, 4, '4 x test', 1, '40.01', '7.60', true],
-            [10.002, 4, '4 x test', 1, '40.01', '0.00', false],
-            [10.002, 55, '55 x test', 1, '550.11', '104.52', true],
-            [10.002, 55, '55 x test', 1, '550.11', '0.00', false],
-            [1, 10, 'test', 10, '1.00', '0.19', true],
-            [1.2, 10, '10 x test', 1, '12.00', '2.28', true],
+            [1, 'test', 1, '10.00'],
+            [2, 'test', 2, '10.00'],
+            [4, '4 x test', 1, '40.01'],
+            [55, '55 x test', 1, '550.11'],
         ];
     }
 

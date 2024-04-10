@@ -12,7 +12,6 @@ use Swag\PayPal\RestApi\PayPalApiStruct;
 use Swag\PayPal\RestApi\V2\Api\Order\PaymentSource\Bancontact;
 use Swag\PayPal\RestApi\V2\Api\Order\PaymentSource\Blik;
 use Swag\PayPal\RestApi\V2\Api\Order\PaymentSource\Boletobancario;
-use Swag\PayPal\RestApi\V2\Api\Order\PaymentSource\Card;
 use Swag\PayPal\RestApi\V2\Api\Order\PaymentSource\Eps;
 use Swag\PayPal\RestApi\V2\Api\Order\PaymentSource\Giropay;
 use Swag\PayPal\RestApi\V2\Api\Order\PaymentSource\Ideal;
@@ -47,12 +46,7 @@ class PaymentSource extends PayPalApiStruct
     /**
      * @OA\Property(ref="#/components/schemas/swag_paypal_v2_order_payment_source_boletobancario")
      */
-    protected ?Boletobancario $boletobancario = null;
-
-    /**
-     * @OA\Property(ref="#/components/schemas/swag_paypal_v2_order_payment_source_card")
-     */
-    protected ?Card $card = null;
+    protected ?Boletobancario $Boletobancario = null;
 
     /**
      * @OA\Property(ref="#/components/schemas/swag_paypal_v2_order_payment_source_eps")
@@ -131,22 +125,12 @@ class PaymentSource extends PayPalApiStruct
 
     public function getBoletobancario(): ?Boletobancario
     {
-        return $this->boletobancario;
+        return $this->Boletobancario;
     }
 
-    public function setBoletobancario(?Boletobancario $boletobancario): void
+    public function setBoletobancario(?Boletobancario $Boletobancario): void
     {
-        $this->boletobancario = $boletobancario;
-    }
-
-    public function getCard(): ?Card
-    {
-        return $this->card;
-    }
-
-    public function setCard(?Card $card): void
-    {
-        $this->card = $card;
+        $this->Boletobancario = $Boletobancario;
     }
 
     public function getEps(): ?Eps

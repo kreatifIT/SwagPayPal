@@ -65,9 +65,9 @@ class PaymentStatusUtilV2Test extends TestCase
     /**
      * @dataProvider dataProviderTestApplyCaptureState
      */
-    public function testApplyCaptureState(Capture $captureResponse, string $expectedOrderTransactionState, string $originalOrderTransactionState): void
+    public function testApplyCaptureState(Capture $captureResponse, string $expectedOrderTransactionState): void
     {
-        $orderTransactionId = $this->createOrderTransaction(true, $originalOrderTransactionState);
+        $orderTransactionId = $this->createOrderTransaction();
 
         $this->paymentStatusUtil->applyCaptureState(
             $orderTransactionId,
@@ -84,29 +84,10 @@ class PaymentStatusUtilV2Test extends TestCase
             [
                 $this->createCapture(true),
                 OrderTransactionStates::STATE_PAID,
-                OrderTransactionStates::STATE_AUTHORIZED,
             ],
             [
                 $this->createCapture(false),
                 OrderTransactionStates::STATE_PARTIALLY_PAID,
-                OrderTransactionStates::STATE_AUTHORIZED,
-            ],
-            [
-                $this->createCapture(true),
-                OrderTransactionStates::STATE_PAID,
-                OrderTransactionStates::STATE_PAID,
-            ],
-            [
-                $this->createCapture(true),
-                OrderTransactionStates::STATE_PAID,
-                /** @phpstan-ignore-next-line */
-                \defined('Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStates::STATE_UNCONFIRMED') ? OrderTransactionStates::STATE_UNCONFIRMED : OrderTransactionStates::STATE_IN_PROGRESS,
-            ],
-            [
-                $this->createCapture(false),
-                OrderTransactionStates::STATE_PARTIALLY_PAID,
-                /** @phpstan-ignore-next-line */
-                \defined('Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStates::STATE_UNCONFIRMED') ? OrderTransactionStates::STATE_UNCONFIRMED : OrderTransactionStates::STATE_IN_PROGRESS,
             ],
         ];
     }
@@ -242,7 +223,7 @@ class PaymentStatusUtilV2Test extends TestCase
         $this->assertTransactionState($orderTransactionId, OrderTransactionStates::STATE_REFUNDED);
     }
 
-    private function createOrderTransaction(bool $withTransaction = true, string $state = OrderTransactionStates::STATE_AUTHORIZED): string
+    private function createOrderTransaction(bool $withTransaction = true): string
     {
         $orderTransactionId = Uuid::randomHex();
 
@@ -260,7 +241,7 @@ class PaymentStatusUtilV2Test extends TestCase
                         'taxRules' => [],
                     ],
                     'stateId' => $this->getOrderTransactionStateIdByTechnicalName(
-                        $state,
+                        OrderTransactionStates::STATE_AUTHORIZED,
                         $this->getContainer(),
                         $this->context
                     ),

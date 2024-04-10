@@ -1,3 +1,5 @@
+/* eslint-disable import/no-unresolved */
+
 import DomAccess from 'src/helper/dom-access.helper';
 import SwagPaypalAbstractButtons from '../swag-paypal.abstract-buttons';
 

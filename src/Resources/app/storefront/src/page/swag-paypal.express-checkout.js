@@ -1,3 +1,5 @@
+/* eslint-disable import/no-unresolved */
+
 import StoreApiClient from 'src/service/store-api-client.service';
 import DomAccess from 'src/helper/dom-access.helper';
 import ElementLoadingIndicatorUtil from 'src/utility/loading-indicator/element-loading-indicator.util';
@@ -153,13 +155,6 @@ export default class SwagPayPalExpressCheckoutButton extends SwagPaypalAbstractB
          * @type string
          */
         cancelRedirectUrl: '',
-
-        /**
-         * Show additional pay later button
-         *
-         * @type boolean
-         */
-        disablePayLater: true,
     };
 
     init() {
@@ -195,7 +190,8 @@ export default class SwagPayPalExpressCheckoutButton extends SwagPaypalAbstractB
 
     observeBuyButton(target, enableButton, disableButton, config = { attributes: true }) {
         const callback = (mutations) => {
-            mutations.forEach((mutation) => {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const mutation of mutations) {
                 if (mutation.attributeName === 'disabled') {
                     const { disabled: isBuyButtonDisabled } = this.getBuyButtonState();
 
@@ -205,7 +201,7 @@ export default class SwagPayPalExpressCheckoutButton extends SwagPaypalAbstractB
                     }
                     enableButton();
                 }
-            });
+            }
         };
 
         const observer = new MutationObserver(callback);
